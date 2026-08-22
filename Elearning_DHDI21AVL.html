@@ -6080,9 +6080,16 @@ class ApiService {
     list[idx].photoStatus = status.toUpperCase();
     this.saveLocalStudents(list);
 
+    const currentUser = this.getCurrentUser();
+    if (currentUser && String(currentUser.masv).trim() === String(masv).trim()) {
+      currentUser.photoApproved = isApproved;
+      currentUser.photoStatus = status.toUpperCase();
+      localStorage.setItem(STORAGE_KEY_CURRENT_USER, JSON.stringify(currentUser));
+    }
+
     if (this.apiUrl) {
       try {
-        await fetch(this.apiUrl, {
+        const response = await fetch(this.apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
@@ -6092,8 +6099,14 @@ class ApiService {
             adminPass
           })
         });
+        if (response.ok) {
+          const resJson = await response.json();
+          if (!resJson.success) {
+            console.warn('Apps Script admin approval response:', resJson.message);
+          }
+        }
       } catch (err) {
-        console.warn('Sync admin approval failed:', err);
+        console.warn('Sync admin approval to Google Apps Script failed:', err);
       }
     }
 

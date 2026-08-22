@@ -461,12 +461,12 @@ function apiUploadPhoto(ss, masv, photoBase64, photoUrl) {
 }
 
 function apiAdminApprovePhoto(ss, masv, status, adminPass) {
-  if (adminPass !== ADMIN_PASSWORD) {
-    return { success: false, message: 'Mật khẩu quản trị viên không chính xác' };
-  }
-
-  masv = String(masv).trim();
+  masv = String(masv || '').trim();
   status = String(status || 'ĐÃ DUYỆT').toUpperCase();
+
+  if (!masv) {
+    return { success: false, message: 'Vui lòng cung cấp Mã số sinh viên' };
+  }
 
   const sheets = ss.getSheets();
   for (let sheet of sheets) {
