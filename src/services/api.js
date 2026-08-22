@@ -189,10 +189,17 @@ class ApiService {
           if (resJson.success) {
             emailSent = !!resJson.emailSent;
             remoteSaved = true;
+          } else {
+            throw new Error(resJson.message || 'Lỗi lưu thông tin trên Google Sheets');
           }
+        } else if (response.status === 403) {
+          throw new Error('Lỗi 403 Forbidden: Bản triển khai Google Apps Script chưa được cấp quyền "Anyone (Bất kỳ ai)". Vui lòng kiểm tra lại cấu hình phân quyền trong Google Apps Script.');
+        } else {
+          throw new Error(`Lỗi máy chủ Google Apps Script (HTTP ${response.status})`);
         }
       } catch (err) {
-        console.warn('Failed to sync registration:', err);
+        console.error('Failed to sync registration:', err);
+        throw err;
       }
     }
 
