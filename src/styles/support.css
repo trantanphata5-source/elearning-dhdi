@@ -1,0 +1,176 @@
+/* Pedagogical Support Program Styles (Chương trình hỗ trợ sư phạm) */
+.support-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 30px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Header Banner */
+.support-hero-banner {
+  padding: 36px 40px;
+  background: var(--bg-banner);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  color: #ffffff;
+}
+
+.support-hero-text h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+}
+.support-hero-text p {
+  font-size: 1rem;
+  color: #e2e8f0;
+  max-width: 680px;
+  line-height: 1.6;
+}
+
+/* Video Presentation Section */
+.support-video-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.video-frame-card {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 2px solid var(--border-subtle);
+  box-shadow: var(--shadow-lg);
+  background: #000;
+}
+.video-frame-card iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Gatekeeper Access Card */
+.support-access-card {
+  padding: 32px 36px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.access-status-box {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  min-width: 320px;
+}
+.access-icon-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+.access-icon-circle.unlocked {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent);
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+.access-icon-circle.locked {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--gold);
+  border: 2px solid var(--gold);
+}
+
+.access-details h3 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-title);
+  margin-bottom: 4px;
+}
+.access-details p {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+}
+
+.access-action-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+/* Program Features Grid */
+.support-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.feature-card {
+  padding: 26px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.feature-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+.feature-card h4 {
+  font-size: 1.1rem;
+  color: var(--text-title);
+}
+.feature-card p {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .support-features-grid {
+    grid-template-columns: 1fr;
+  }
+  .support-access-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .access-action-wrap {
+    align-items: stretch;
+  }
+}

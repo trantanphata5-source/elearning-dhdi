@@ -1,0 +1,132 @@
+/* =========================================================================
+   DESIGN TOKENS & COLOR PALETTES (DARK & LIGHT MODE)
+   ========================================================================= */
+
+:root, [data-theme="dark"] {
+  /* Brand Primary - Royal Blue */
+  --primary-h: 224;
+  --primary-s: 82%;
+  --primary-l: 56%;
+  --primary: hsl(var(--primary-h), var(--primary-s), var(--primary-l));
+  --primary-light: hsl(var(--primary-h), 85%, 68%);
+  --primary-dark: hsl(var(--primary-h), 85%, 38%);
+  --primary-glow: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.28);
+
+  /* Brand Accent - Emerald */
+  --accent-h: 162;
+  --accent-s: 74%;
+  --accent-l: 46%;
+  --accent: hsl(var(--accent-h), var(--accent-s), var(--accent-l));
+  --accent-light: hsl(var(--accent-h), 80%, 60%);
+  --accent-glow: hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.25);
+
+  --gold-h: 42;
+  --gold-s: 96%;
+  --gold-l: 54%;
+  --gold: hsl(var(--gold-h), var(--gold-s), var(--gold-l));
+  --gold-glow: hsla(var(--gold-h), var(--gold-s), var(--gold-l), 0.25);
+
+  --danger-h: 0;
+  --danger-s: 84%;
+  --danger-l: 60%;
+  --danger: hsl(var(--danger-h), var(--danger-s), var(--danger-l));
+  --danger-glow: hsla(var(--danger-h), var(--danger-s), var(--danger-l), 0.25);
+
+  --info-h: 198;
+  --info-s: 90%;
+  --info-l: 48%;
+  --info: hsl(var(--info-h), var(--info-s), var(--info-l));
+
+  /* Dark Theme Surfaces */
+  --bg-main: #0a0f1d;
+  --bg-secondary: #0f172a;
+  --bg-header: rgba(10, 15, 29, 0.85);
+  --bg-card: rgba(17, 24, 39, 0.78);
+  --bg-card-hover: rgba(24, 34, 53, 0.9);
+  --bg-glass: rgba(255, 255, 255, 0.04);
+  --bg-glass-strong: rgba(255, 255, 255, 0.08);
+  --bg-input: rgba(15, 23, 42, 0.75);
+  --bg-modal: rgba(15, 23, 42, 0.96);
+  --bg-banner: linear-gradient(135deg, rgba(30, 58, 138, 0.9) 0%, rgba(88, 28, 135, 0.85) 50%, rgba(15, 23, 42, 0.95) 100%);
+  --bg-pill: rgba(15, 23, 42, 0.7);
+
+  /* Dark Borders */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-glass: rgba(255, 255, 255, 0.12);
+  --border-active: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.5);
+
+  /* Dark Typography */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-title: #ffffff;
+  --text-inverse: #0f172a;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 16px 40px -8px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 25px var(--primary-glow);
+  --shadow-gold: 0 0 20px var(--gold-glow);
+  --shadow-accent: 0 0 20px var(--accent-glow);
+
+  /* Gradients */
+  --grad-primary: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  --grad-accent: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  --grad-gold: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --grad-dark: linear-gradient(180deg, #0f172a 0%, #0a0f1d 100%);
+  --grad-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.02) 100%);
+
+  /* Radii & Transitions */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 350ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* =========================================================================
+   LIGHT MODE THEME (Crisp, High Contrast, Modern University Portal)
+   ========================================================================= */
+
+[data-theme="light"] {
+  /* Light Theme Surfaces */
+  --bg-main: #f1f5f9;
+  --bg-secondary: #ffffff;
+  --bg-header: rgba(255, 255, 255, 0.92);
+  --bg-card: #ffffff;
+  --bg-card-hover: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.85);
+  --bg-glass-strong: #f8fafc;
+  --bg-input: #ffffff;
+  --bg-modal: #ffffff;
+  --bg-banner: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #4338ca 100%);
+  --bg-pill: #e2e8f0;
+
+  /* Light Borders */
+  --border-subtle: #e2e8f0;
+  --border-glass: #cbd5e1;
+  --border-active: #2563eb;
+
+  /* Light Typography */
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-title: #0f172a;
+  --text-inverse: #ffffff;
+
+  /* Light Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 28px -4px rgba(15, 23, 42, 0.12), 0 4px 8px -2px rgba(15, 23, 42, 0.06);
+  --shadow-glow: 0 4px 14px rgba(37, 99, 235, 0.25);
+  --shadow-accent: 0 4px 14px rgba(16, 185, 129, 0.25);
+
+  /* Light Input Focus */
+  --primary-glow: rgba(37, 99, 235, 0.18);
+}

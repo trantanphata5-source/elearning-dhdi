@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Learning DHDI21AVL | Nhà Máy Điện & Trạm Biến Áp</title>
+  <meta name="description" content="Cổng học tập trực tuyến E-Learning dành cho 5 lớp học khóa DHDI21AVL - Học phần Nhà máy điện và trạm biến áp">
+  <link rel="icon" type="image/jpeg" href="/logo.jpg">
+  
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6 Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/src/styles/variables.css">
+  <link rel="stylesheet" href="/src/styles/base.css">
+  <link rel="stylesheet" href="/src/styles/auth.css">
+  <link rel="stylesheet" href="/src/styles/navbar.css">
+  <link rel="stylesheet" href="/src/styles/dashboard.css">
+  <link rel="stylesheet" href="/src/styles/students.css">
+  <link rel="stylesheet" href="/src/styles/courses.css">
+  <link rel="stylesheet" href="/src/styles/support.css">
+  <link rel="stylesheet" href="/src/styles/admin.css">
+  <link rel="stylesheet" href="/src/styles/modals.css">
+</head>
+<body>
+
+  <!-- ===================================================== -->
+  <!-- 1. AUTH / LOGIN CONTAINER -->
+  <!-- ===================================================== -->
+  <div id="authWrapper" class="auth-wrapper" style="display: none;">
+    <!-- Floating Theme Switcher on Login Page -->
+    <div class="auth-theme-toggle">
+      <button type="button" id="loginThemeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Chuyển chế độ Sáng / Tối">
+        <i class="fa-solid fa-moon"></i>
+      </button>
+    </div>
+
+    <div class="auth-bg-orbs">
+      <div class="auth-orb orb-1"></div>
+      <div class="auth-orb orb-2"></div>
+      <div class="auth-orb orb-3"></div>
+    </div>
+    <div class="auth-grid-pattern"></div>
+
+    <div class="auth-card" id="authCardContent">
+      <!-- Dynamic Login View rendered by main.js -->
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- 2. MAIN E-LEARNING APPLICATION WRAPPER -->
+  <!-- ===================================================== -->
+  <div id="mainApp" style="display: none;">
+    <!-- Top Sticky Header with Dedicated Navigation Row -->
+    <header class="app-header">
+      <!-- Tier 1: Brand & Top Utilities -->
+      <div class="header-top-row">
+        <div class="header-left">
+          <a href="javascript:void(0)" class="brand-logo-link" onclick="switchTab('dashboard')">
+            <img src="/logo.jpg" alt="Logo Khóa học" class="brand-logo-img" onerror="this.src='/logo.jpg'">
+            <div class="brand-text">
+              <span class="brand-university">TRƯỜNG ĐẠI HỌC CÔNG NGHIỆP TP. HỒ CHÍ MINH</span>
+              <span class="brand-title">E-LEARNING DHDI21AVL</span>
+              <span class="brand-subtitle">Học phần: 4237010467 - Nhà máy điện & Trạm biến áp</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Right Header Actions & User Profile -->
+        <div class="header-right">
+          <!-- Dark / Light Mode Toggle Button -->
+          <button type="button" id="headerThemeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Chuyển đổi giao diện Sáng / Tối">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+
+          <div class="header-time-badge">
+            <span class="time-dot"></span>
+            <span id="liveClockText">--:--:--</span>
+          </div>
+
+          <!-- User Menu Dropdown -->
+          <div class="user-menu-wrapper">
+            <button type="button" id="userProfileBtn" class="user-profile-btn">
+              <div class="user-avatar-wrap" id="headerUserAvatar">
+                <span>SV</span>
+                <span id="userPhotoStatusDot" class="user-status-dot" style="display: none;"></span>
+              </div>
+              <div class="user-info-text">
+                <span class="user-name" id="headerUserName">Sinh viên</span>
+                <span class="user-role-badge" id="headerUserRole">DHDI21AVL</span>
+              </div>
+              <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; color: var(--text-muted); margin-left: 2px;"></i>
+            </button>
+
+            <!-- Dropdown Popup -->
+            <div id="userDropdownMenu" class="user-dropdown">
+              <div class="dropdown-header">
+                <div class="dropdown-user-name" id="dropdownUserName">Tài khoản Sinh viên</div>
+                <div class="dropdown-user-code" id="dropdownUserRole">Khóa DHDI21AVL</div>
+              </div>
+
+              <button class="dropdown-item" onclick="openStudentDetailModal(state.currentUser?.masv)">
+                <i class="fa-solid fa-user-gear"></i> Thông tin hồ sơ cá nhân
+              </button>
+              <button class="dropdown-item" onclick="openPhotoUploadModal()">
+                <i class="fa-solid fa-camera"></i> Cập nhật ảnh thẻ 3x4
+              </button>
+              <button class="dropdown-item" onclick="openChangePasswordModal()">
+                <i class="fa-solid fa-key"></i> Đổi mật khẩu tài khoản
+              </button>
+              <button class="dropdown-item" onclick="switchTab('admin')">
+                <i class="fa-solid fa-shield-halved"></i> Bảng quản trị & Duyệt ảnh
+              </button>
+
+              <div class="dropdown-divider"></div>
+
+              <button class="dropdown-item danger" onclick="handleLogout()">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tier 2: Dedicated Navigation Row -->
+      <div class="header-nav-row">
+        <nav class="header-nav">
+          <button class="nav-tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">
+            <i class="fa-solid fa-house"></i> Trang chủ
+          </button>
+          <button class="nav-tab-btn" data-tab="students" onclick="switchTab('students')">
+            <i class="fa-solid fa-users"></i> Danh sách 5 Lớp <span class="tab-badge">85</span>
+          </button>
+          <button class="nav-tab-btn" data-tab="courses" onclick="switchTab('courses')">
+            <i class="fa-solid fa-book-open"></i> Bài giảng & Bài tập
+          </button>
+          <button class="nav-tab-btn" data-tab="support" onclick="switchTab('support')">
+            <i class="fa-solid fa-chalkboard-user"></i> Hỗ trợ sư phạm
+          </button>
+          <button class="nav-tab-btn" data-tab="admin" onclick="switchTab('admin')">
+            <i class="fa-solid fa-shield-halved"></i> Quản trị
+          </button>
+        </nav>
+
+        <div class="nav-quick-tag">
+          <span><i class="fa-solid fa-graduation-cap" style="color: #3b82f6;"></i> HK1 (2026 - 2027)</span>
+          <span><i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> Khoa Công nghệ Điện</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main id="mainContentArea"></main>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- 3. MODALS & POPUPS -->
+  <!-- ===================================================== -->
+
+  <!-- Registration Modal -->
+  <div id="registerModal" class="modal-overlay">
+    <div class="modal-card reg-modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fa-solid fa-user-plus" style="color: #60a5fa;"></i> Điền Thông Tin Kích Hoạt Tài Khoản
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('registerModal')">&times;</button>
+      </div>
+      <div id="registerModalBody"></div>
+    </div>
+  </div>
+
+  <!-- Register Success Modal -->
+  <div id="registerSuccessModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 500px;">
+      <div id="registerSuccessBody"></div>
+    </div>
+  </div>
+
+  <!-- Student Detail Full Profile Modal -->
+  <div id="studentDetailModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="studentDetailTitle">
+          <i class="fa-solid fa-id-card"></i> Thông Tin Sinh Viên
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('studentDetailModal')">&times;</button>
+      </div>
+      <div id="studentDetailBody"></div>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div id="changePasswordModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fa-solid fa-key" style="color: #fbbf24;"></i> Thay Đổi Mật Khẩu
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('changePasswordModal')">&times;</button>
+      </div>
+      
+      <div class="pass-req-list">
+        🔒 <strong>Quy định bảo mật:</strong> Mật khẩu mới cần tối thiểu 6 ký tự. Sau khi đổi mật khẩu, hệ thống sẽ tự động cập nhật vào cơ sở dữ liệu.
+      </div>
+
+      <form id="changePasswordForm" class="auth-form">
+        <div class="form-group">
+          <label class="form-label" for="oldPassInput">
+            Mật khẩu hiện tại <span class="required">*</span>
+          </label>
+          <input type="password" id="oldPassInput" class="form-control" placeholder="Nhập mật khẩu cũ..." required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newPassInput">
+            Mật khẩu mới <span class="required">*</span>
+          </label>
+          <input type="password" id="newPassInput" class="form-control" placeholder="Tối thiểu 6 ký tự..." required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="confirmPassInput">
+            Xác nhận mật khẩu mới <span class="required">*</span>
+          </label>
+          <input type="password" id="confirmPassInput" class="form-control" placeholder="Nhập lại chính xác mật khẩu mới..." required>
+        </div>
+
+        <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('changePasswordModal')">Hủy bỏ</button>
+          <button type="submit" id="btnSubmitChangePass" class="btn btn-primary">
+            <i class="fa-solid fa-floppy-disk"></i> Lưu Mật Khẩu Mới
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3x4 Photo Upload Modal -->
+  <div id="photoUploadModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fa-solid fa-camera" style="color: #34d399;"></i> Cập Nhật Ảnh Thẻ 3x4
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('photoUploadModal')">&times;</button>
+      </div>
+
+      <input type="hidden" id="photoTargetMasv" value="">
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">
+        Vui lòng chọn ảnh thẻ tỷ lệ 3x4 chụp rõ mặt, phông nền xanh hoặc trắng. Ảnh sau khi tải lên sẽ được lưu trữ an toàn và gửi Ban Quản trị xét duyệt để mở khóa quyền truy cập <strong>Chương trình hỗ trợ sư phạm</strong>.
+      </p>
+
+      <label class="photo-upload-dropzone" for="photoFileInput">
+        <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
+        <h4 style="color: var(--text-title); margin-bottom: 4px;">Nhấn để chọn ảnh thẻ từ thiết bị</h4>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">Hỗ trợ định dạng JPG, PNG (tối đa 5MB)</p>
+        <input type="file" id="photoFileInput" accept="image/*" style="display: none;">
+      </label>
+
+      <div id="photoUploadPreview"></div>
+
+      <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('photoUploadModal')">Hủy</button>
+        <button type="button" id="btnSavePhoto" class="btn btn-accent">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Lưu Ảnh 3x4
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Lesson & Course Material Viewer Modal -->
+  <div id="lessonViewerModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 860px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="lessonViewerTitle">
+          <i class="fa-solid fa-book-open" style="color: #60a5fa;"></i> Chi Tiết Bài Giảng & Tài Liệu
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('lessonViewerModal')">&times;</button>
+      </div>
+      <div id="lessonViewerBody"></div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Main JavaScript Module -->
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
