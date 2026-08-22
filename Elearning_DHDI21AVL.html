@@ -2886,7 +2886,7 @@ button {
                 <div class="dropdown-user-code" id="dropdownUserRole">Khóa DHDI21AVL</div>
               </div>
 
-              <button class="dropdown-item" onclick="openStudentDetailModal(state.currentUser?.masv)">
+              <button class="dropdown-item" onclick="openStudentDetailModal()">
                 <i class="fa-solid fa-user-gear"></i> Thông tin hồ sơ cá nhân
               </button>
               <button class="dropdown-item" onclick="openPhotoUploadModal()">
@@ -6161,6 +6161,8 @@ const state = {
   quizState: {}
 };
 
+window.state = state;
+
 // =========================================================================
 // 1. GLOBAL FUNCTIONS EXPORTED TO WINDOW IMMEDIATELY (ZERO-LATENCY BINDING)
 // =========================================================================
@@ -6271,7 +6273,18 @@ window.adminApproveStudentPhoto = async function(masv, status) {
   try {
     const res = await api.adminApprovePhoto(masv, status);
     showToast(res.message, status === 'ĐÃ DUYỆT' ? 'success' : 'info');
-    state.students = await api.getStudents();
+    
+    // 1. Immediately update state from local cache for instant UI refresh
+    state.students = api.getLocalStudents();
+    
+    // 2. If the current logged-in user is this student, update session
+    if (state.currentUser && String(state.currentUser.masv).trim() === String(masv).trim()) {
+      state.currentUser.photoApproved = (status === 'ĐÃ DUYỆT');
+      state.currentUser.photoStatus = status;
+      renderAppHeader();
+    }
+    
+    // 3. Immediately re-render active tab view
     renderActiveTab();
   } catch (err) {
     showToast(err.message || 'Lỗi duyệt ảnh', 'error');
@@ -7143,14 +7156,13 @@ function renderAdminView() {
   const pendingPhotos = state.students.filter(s => s.anh3x4 && !s.photoApproved);
   const approvedPhotos = state.students.filter(s => s.photoApproved);
   const registeredCount = state.students.filter(s => s.isRegistered || (s.matkhau && s.email)).length;
-  const currentApiUrl = api.getApiUrl();
 
   return `
     <div class="admin-container">
       <div class="admin-header">
         <div>
           <h2 style="font-size: 1.6rem; color: var(--text-title);"><i class="fa-solid fa-shield-halved" style="color: #d97706;"></i> Bảng Quản Trị Hệ Thống E-Learning</h2>
-          <p style="color: var(--text-secondary); margin-top: 4px;">Duyệt ảnh thẻ 3x4 sinh viên, quản lý cấu hình kết nối máy chủ API và thông tin 5 lớp.</p>
+          <p style="color: var(--text-secondary); margin-top: 4px;">Duyệt ảnh thẻ 3x4 sinh viên và quản lý danh sách học viên 5 lớp khóa DHDI21AVL.</p>
         </div>
         <button class="btn btn-secondary" onclick="refreshAdminData()">
           <i class="fa-solid fa-rotate"></i> Làm mới dữ liệu
@@ -7173,21 +7185,6 @@ function renderAdminView() {
         <div class="admin-stat-box">
           <div class="admin-stat-num" style="color: #059669;">${approvedPhotos.length}</div>
           <div class="admin-stat-title">Ảnh Đã Phê Duyệt</div>
-        </div>
-      </div>
-
-      <div class="admin-api-panel">
-        <h3 style="font-size: 1.2rem; color: var(--text-title); margin-bottom: 8px;">
-          <i class="fa-solid fa-link" style="color: #2563eb;"></i> Cấu Hình Kết Nối Máy Chủ API (Google Apps Script)
-        </h3>
-        <p style="color: var(--text-secondary); font-size: 0.9rem;">
-          URL Web App kết nối cơ sở dữ liệu và tự động gửi Email tài khoản:
-        </p>
-        <div class="api-url-input-group">
-          <input type="url" id="adminApiUrlInput" class="form-control" placeholder="https://script.google.com/macros/s/.../exec" value="${currentApiUrl}">
-          <button class="btn btn-primary" onclick="saveAdminApiUrl()">
-            <i class="fa-solid fa-floppy-disk"></i> Lưu Cấu Hình API
-          </button>
         </div>
       </div>
 
@@ -7932,12 +7929,29 @@ window.closeSuccessAndGoToLogin = function(masv) {
 };
 
 window.openStudentDetailModal = function(masv) {
-  const student = state.students.find(s => String(s.masv).trim() === String(masv).trim());
-  if (!student) return;
+  // Close the user dropdown menu if open
+  const dropdown = document.getElementById('userDropdownMenu');
+  if (dropdown) dropdown.classList.remove('show');
+
+  const targetMasv = masv || state.currentUser?.masv;
+  if (!targetMasv) {
+    showToast('Vui lòng đăng nhập để xem thông tin hồ sơ!', 'info');
+    return;
+  }
+
+  let student = state.students.find(s => String(s.masv).trim() === String(targetMasv).trim());
+  if (!student && state.currentUser && String(state.currentUser.masv).trim() === String(targetMasv).trim()) {
+    student = state.currentUser;
+  }
+
+  if (!student) {
+    showToast(`Không tìm thấy dữ liệu hồ sơ cho Mã SV: ${targetMasv}`, 'error');
+    return;
+  }
 
   const title = document.getElementById('studentDetailTitle');
   const body = document.getElementById('studentDetailBody');
-  const fullname = student.fullname || `${student.hodem || ''} ${student.ten || ''}`.trim();
+  const fullname = student.fullname || `${student.hodem || ''} ${student.ten || ''}`.trim() || 'Sinh viên';
   if (title) title.innerHTML = `<i class="fa-solid fa-id-card"></i> Hồ Sơ Sinh Viên: ${fullname}`;
 
   const hasPhoto = !!student.anh3x4;
