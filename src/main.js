@@ -28,7 +28,12 @@ const state = {
 // =========================================================================
 
 window.switchTab = function(tabName) {
-  state.currentTab = tabName || 'dashboard';
+  if (tabName === 'admin' && (!state.currentUser || state.currentUser.role !== 'ADMIN')) {
+    showToast('Chức năng Quản trị chỉ dành riêng cho Ban Quản Trị hệ thống!', 'error');
+    state.currentTab = 'dashboard';
+  } else {
+    state.currentTab = tabName || 'dashboard';
+  }
   renderAppHeader();
   renderActiveTab();
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -380,6 +385,21 @@ function renderAppHeader() {
     }
   }
 
+  const isAdmin = user && user.role === 'ADMIN';
+
+  // 1. Hide or Show Admin Tab on Navbar based on user role
+  const adminNavBtn = document.getElementById('navTabAdminBtn') || document.querySelector('.nav-tab-btn[data-tab="admin"]');
+  if (adminNavBtn) {
+    adminNavBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+  }
+
+  // 2. Hide or Show Admin Dropdown Item based on user role
+  const adminDropdownItem = document.getElementById('dropdownAdminItem');
+  if (adminDropdownItem) {
+    adminDropdownItem.style.display = isAdmin ? 'flex' : 'none';
+  }
+
+  // Update active tab button classes
   document.querySelectorAll('.nav-tab-btn').forEach(btn => {
     const tab = btn.getAttribute('data-tab');
     if (tab === state.currentTab) {
@@ -1726,30 +1746,35 @@ function openSuccessRegisterModal(data) {
   body.innerHTML = `
     <div style="text-align: center; padding: 10px 0;">
       <div style="width: 72px; height: 72px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); color: #10b981; font-size: 2.4rem; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; border: 2px solid #10b981;">
-        <i class="fa-solid fa-check"></i>
+        <i class="fa-solid fa-envelope-circle-check"></i>
       </div>
-      <h3 style="font-size: 1.4rem; color: var(--text-title); margin-bottom: 8px;">Đăng Ký Thành Công!</h3>
-      <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 20px;">
-        Thông tin của sinh viên <strong>${data.fullname}</strong> đã được lưu thành công vào hệ thống.
+      <h3 style="font-size: 1.4rem; color: var(--text-title); margin-bottom: 8px;">Kích Hoạt Tài Khoản Thành Công!</h3>
+      <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 18px;">
+        Mật khẩu đăng nhập đã được hệ thống tạo và <strong>gửi trực tiếp về hòm thư Email</strong> của bạn:
       </p>
 
       <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 18px; text-align: left; margin-bottom: 20px; box-shadow: var(--shadow-sm);">
-        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
-          <span style="color: var(--text-muted);">Tài khoản đăng nhập (Mã SV):</span>
-          <strong style="color: var(--text-title); font-family: monospace; font-size: 1.05rem;">${data.masv}</strong>
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
+          <span style="color: var(--text-muted);">Sinh viên:</span>
+          <strong style="color: var(--text-title); font-size: 1rem;">${data.fullname}</strong>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
-          <span style="color: var(--text-muted);">Mật khẩu khởi tạo:</span>
-          <strong style="color: var(--primary); font-family: monospace; font-size: 1.25rem; letter-spacing: 1px;">${data.tempPassword}</strong>
+          <span style="color: var(--text-muted);">Tài khoản đăng nhập (Mã SV):</span>
+          <strong style="color: var(--primary); font-family: monospace; font-size: 1.1rem;">${data.masv}</strong>
         </div>
-        <div style="display: flex; justify-content: space-between; padding: 6px 0;">
-          <span style="color: var(--text-muted);">Email nhận thông báo:</span>
-          <span style="color: var(--accent); font-weight: 600;">${data.email}</span>
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
+          <span style="color: var(--text-muted);">Email nhận mật khẩu:</span>
+          <strong style="color: #059669; font-size: 0.95rem;"><i class="fa-solid fa-envelope"></i> ${data.email}</strong>
+        </div>
+        <div style="padding: 10px 0 2px 0;">
+          <div style="background: rgba(37, 99, 235, 0.1); border: 1px dashed rgba(37, 99, 235, 0.4); border-radius: 8px; padding: 12px; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+            📩 <strong>Hướng dẫn bảo mật:</strong> Mật khẩu <strong>chỉ gửi về email</strong> (không hiển thị trên trang web để đảm bảo quyền riêng tư). Vui lòng mở hòm thư <code>${data.email}</code> (kiểm tra cả mục <em>Thư đến / Spam / Quảng cáo</em>) để lấy mật khẩu đăng nhập.
+          </div>
         </div>
       </div>
 
-      <button type="button" class="btn btn-primary btn-lg" style="width: 100%;" onclick="fillAndCloseSuccessModal('${data.masv}', '${data.tempPassword}')">
-        <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập ngay
+      <button type="button" class="btn btn-primary btn-lg" style="width: 100%;" onclick="closeSuccessAndGoToLogin('${data.masv}')">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i> Đã nhận mật khẩu & Quay lại đăng nhập
       </button>
     </div>
   `;
@@ -1757,14 +1782,14 @@ function openSuccessRegisterModal(data) {
   openModal('registerSuccessModal');
 }
 
-window.fillAndCloseSuccessModal = function(masv, pass) {
+window.closeSuccessAndGoToLogin = function(masv) {
   closeModal('registerSuccessModal');
   const userEl = document.getElementById('loginUsername');
   const passEl = document.getElementById('loginPassword');
-  if (userEl && passEl) {
-    userEl.value = masv;
-    passEl.value = pass;
-    document.getElementById('loginForm')?.requestSubmit();
+  if (userEl) userEl.value = masv;
+  if (passEl) {
+    passEl.value = '';
+    passEl.focus();
   }
 };
 

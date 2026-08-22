@@ -113,7 +113,7 @@
               <button class="dropdown-item" onclick="openChangePasswordModal()">
                 <i class="fa-solid fa-key"></i> Đổi mật khẩu tài khoản
               </button>
-              <button class="dropdown-item" onclick="switchTab('admin')">
+              <button class="dropdown-item" id="dropdownAdminItem" onclick="switchTab('admin')">
                 <i class="fa-solid fa-shield-halved"></i> Bảng quản trị & Duyệt ảnh
               </button>
 
@@ -142,7 +142,7 @@
           <button class="nav-tab-btn" data-tab="support" onclick="switchTab('support')">
             <i class="fa-solid fa-chalkboard-user"></i> Hỗ trợ sư phạm
           </button>
-          <button class="nav-tab-btn" data-tab="admin" onclick="switchTab('admin')">
+          <button class="nav-tab-btn" id="navTabAdminBtn" data-tab="admin" onclick="switchTab('admin')">
             <i class="fa-solid fa-shield-halved"></i> Quản trị
           </button>
         </nav>
