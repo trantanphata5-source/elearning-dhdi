@@ -6753,52 +6753,115 @@ class ApiService {
 
     if (idx === -1) throw new Error('Không tìm thấy sinh viên');
 
-    list[idx].anh3x4 = photoBase64OrUrl;
+    // Compress image before uploading to reduce payload size
+    let compressedPhoto = photoBase64OrUrl;
+    if (photoBase64OrUrl && photoBase64OrUrl.startsWith('data:image')) {
+      try {
+        compressedPhoto = await this._compressImage(photoBase64OrUrl, 800, 0.7);
+      } catch (compErr) {
+        console.warn('Image compression failed, using original:', compErr);
+      }
+    }
+
+    // Save to localStorage immediately (optimistic update)
+    list[idx].anh3x4 = compressedPhoto;
     list[idx].photoApproved = false;
     list[idx].photoStatus = 'CHỜ DUYỆT';
     this.saveLocalStudents(list);
 
     const currentUser = this.getCurrentUser();
     if (currentUser && currentUser.masv === masv) {
-      currentUser.anh3x4 = photoBase64OrUrl;
+      currentUser.anh3x4 = compressedPhoto;
       currentUser.photoApproved = false;
       currentUser.photoStatus = 'CHỜ DUYỆT';
       localStorage.setItem(STORAGE_KEY_CURRENT_USER, JSON.stringify(currentUser));
     }
 
+    // Sync to Google Apps Script (Google Drive + Google Sheet)
+    let syncSuccess = false;
+    let syncError = '';
     if (this.apiUrl) {
       try {
         const response = await fetch(this.apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          redirect: 'follow',
           body: JSON.stringify({
             action: 'uploadPhoto',
             masv,
-            photoBase64: photoBase64OrUrl
+            photoBase64: compressedPhoto
           })
         });
-        if (response.ok) {
-          const res = await response.json();
-          if (res.success && res.photoUrl) {
-            list[idx].anh3x4 = res.photoUrl;
-            this.saveLocalStudents(list);
-            if (currentUser && currentUser.masv === masv) {
-              currentUser.anh3x4 = res.photoUrl;
-              localStorage.setItem(STORAGE_KEY_CURRENT_USER, JSON.stringify(currentUser));
-            }
+
+        // GAS may redirect (302). Handle both ok and redirected responses.
+        const responseText = await response.text();
+        let res;
+        try {
+          res = JSON.parse(responseText);
+        } catch (parseErr) {
+          console.warn('GAS response not JSON:', responseText.substring(0, 200));
+          throw new Error('Server returned invalid response');
+        }
+
+        if (res.success && res.photoUrl) {
+          // Replace local base64 with Google Drive URL from server
+          list[idx].anh3x4 = res.photoUrl;
+          list[idx].photoStatus = res.photoStatus || 'CHỜ DUYỆT';
+          this.saveLocalStudents(list);
+          if (currentUser && currentUser.masv === masv) {
+            currentUser.anh3x4 = res.photoUrl;
+            currentUser.photoStatus = res.photoStatus || 'CHỜ DUYỆT';
+            localStorage.setItem(STORAGE_KEY_CURRENT_USER, JSON.stringify(currentUser));
           }
+          syncSuccess = true;
+        } else if (res.success) {
+          syncSuccess = true;
+        } else {
+          syncError = res.message || 'Server sync failed';
+          console.warn('GAS uploadPhoto returned error:', res);
         }
       } catch (err) {
+        syncError = err.message || 'Network error';
         console.warn('Sync uploadPhoto to Google Drive failed:', err);
       }
     }
 
     return {
       success: true,
-      message: 'Đã tải lên ảnh 3x4 thành công! Ảnh đang trong trạng thái CHỜ DUYỆT bởi Ban Quản trị.',
-      photoUrl: photoBase64OrUrl,
+      message: syncSuccess 
+        ? 'Đã tải lên ảnh 3x4 thành công và đồng bộ lên hệ thống! Ảnh đang trong trạng thái CHỜ DUYỆT bởi Ban Quản trị.'
+        : 'Đã lưu ảnh 3x4 tạm thời. ' + (syncError ? '⚠️ Chưa đồng bộ được lên máy chủ (' + syncError + '). Vui lòng thử lại sau!' : 'Đang chờ đồng bộ...'),
+      syncedToServer: syncSuccess,
+      photoUrl: compressedPhoto,
       photoStatus: 'CHỜ DUYỆT'
     };
+  }
+
+  // Helper: Compress image to reduce base64 payload size for GAS upload
+  _compressImage(base64Str, maxWidth = 800, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        const compressed = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressed);
+      };
+      img.onerror = reject;
+      img.src = base64Str;
+    });
   }
 
   // 8. Admin Phê duyệt ảnh 3x4
@@ -8860,12 +8923,18 @@ async function handleSaveUploadedPhoto() {
   const btn = document.getElementById('btnSavePhoto');
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner spin"></i> Đang lưu ảnh...`;
+    btn.innerHTML = `<i class="fa-solid fa-spinner spin"></i> Đang tải ảnh lên hệ thống...`;
   }
 
   try {
     const res = await api.uploadPhoto(masv, state.tempUploadedPhoto);
-    showToast(res.message, 'success');
+    
+    if (res.syncedToServer) {
+      showToast(res.message, 'success');
+    } else {
+      showToast(res.message, 'info');
+    }
+    
     closeModal('photoUploadModal');
     state.students = api.getLocalStudents();
     state.currentUser = api.getCurrentUser();

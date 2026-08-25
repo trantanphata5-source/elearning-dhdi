@@ -1976,12 +1976,18 @@ async function handleSaveUploadedPhoto() {
   const btn = document.getElementById('btnSavePhoto');
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner spin"></i> Đang lưu ảnh...`;
+    btn.innerHTML = `<i class="fa-solid fa-spinner spin"></i> Đang tải ảnh lên hệ thống...`;
   }
 
   try {
     const res = await api.uploadPhoto(masv, state.tempUploadedPhoto);
-    showToast(res.message, 'success');
+    
+    if (res.syncedToServer) {
+      showToast(res.message, 'success');
+    } else {
+      showToast(res.message, 'info');
+    }
+    
     closeModal('photoUploadModal');
     state.students = api.getLocalStudents();
     state.currentUser = api.getCurrentUser();
