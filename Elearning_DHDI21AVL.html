@@ -6744,7 +6744,7 @@ class ApiService {
     return { success: true, message: 'Đổi mật khẩu thành công! Hãy ghi nhớ mật khẩu mới của bạn.' };
   }
 
-  // 7. Cập nhật ảnh 3x4 (Tải lên Google Drive)
+  // 7. Cập nhật ảnh 3x4 (Lưu trực tiếp vào Google Sheet)
   async uploadPhoto(masv, photoBase64OrUrl) {
     if (!masv) throw new Error('Thiếu Mã số sinh viên');
 
@@ -6753,31 +6753,41 @@ class ApiService {
 
     if (idx === -1) throw new Error('Không tìm thấy sinh viên');
 
-    // Compress image before uploading to reduce payload size
-    let compressedPhoto = photoBase64OrUrl;
+    // Compress for local display (800px, 70% quality)
+    let localPhoto = photoBase64OrUrl;
     if (photoBase64OrUrl && photoBase64OrUrl.startsWith('data:image')) {
       try {
-        compressedPhoto = await this._compressImage(photoBase64OrUrl, 800, 0.7);
+        localPhoto = await this._compressImage(photoBase64OrUrl, 800, 0.7);
       } catch (compErr) {
         console.warn('Image compression failed, using original:', compErr);
       }
     }
 
-    // Save to localStorage immediately (optimistic update)
-    list[idx].anh3x4 = compressedPhoto;
+    // Compress MORE for server/Sheet storage (300px, 50% quality ≈ 8-15KB base64)
+    let serverPhoto = photoBase64OrUrl;
+    if (photoBase64OrUrl && photoBase64OrUrl.startsWith('data:image')) {
+      try {
+        serverPhoto = await this._compressImage(photoBase64OrUrl, 300, 0.5);
+      } catch (compErr) {
+        serverPhoto = localPhoto; // Fallback to local version
+      }
+    }
+
+    // Save to localStorage immediately (higher quality version)
+    list[idx].anh3x4 = localPhoto;
     list[idx].photoApproved = false;
     list[idx].photoStatus = 'CHỜ DUYỆT';
     this.saveLocalStudents(list);
 
     const currentUser = this.getCurrentUser();
     if (currentUser && currentUser.masv === masv) {
-      currentUser.anh3x4 = compressedPhoto;
+      currentUser.anh3x4 = localPhoto;
       currentUser.photoApproved = false;
       currentUser.photoStatus = 'CHỜ DUYỆT';
       localStorage.setItem(STORAGE_KEY_CURRENT_USER, JSON.stringify(currentUser));
     }
 
-    // Sync to Google Apps Script (Google Drive + Google Sheet)
+    // Sync to Google Apps Script (lưu base64 trực tiếp vào Sheet, không qua Drive)
     let syncSuccess = false;
     let syncError = '';
     if (this.apiUrl) {
@@ -6789,11 +6799,10 @@ class ApiService {
           body: JSON.stringify({
             action: 'uploadPhoto',
             masv,
-            photoBase64: compressedPhoto
+            photoBase64: serverPhoto
           })
         });
 
-        // GAS may redirect (302). Handle both ok and redirected responses.
         const responseText = await response.text();
         let res;
         try {
@@ -6803,36 +6812,34 @@ class ApiService {
           throw new Error('Server returned invalid response');
         }
 
-        if (res.success && res.photoUrl) {
-          // Replace local base64 with Google Drive URL from server
-          list[idx].anh3x4 = res.photoUrl;
-          list[idx].photoStatus = res.photoStatus || 'CHỜ DUYỆT';
-          this.saveLocalStudents(list);
-          if (currentUser && currentUser.masv === masv) {
-            currentUser.anh3x4 = res.photoUrl;
-            currentUser.photoStatus = res.photoStatus || 'CHỜ DUYỆT';
-            localStorage.setItem(STORAGE_KEY_CURRENT_USER, JSON.stringify(currentUser));
+        if (res.success) {
+          syncSuccess = true;
+          // If server returned a different URL (e.g. Drive URL), use it
+          if (res.photoUrl && !res.photoUrl.startsWith('PENDING')) {
+            list[idx].anh3x4 = res.photoUrl;
+            this.saveLocalStudents(list);
+            if (currentUser && currentUser.masv === masv) {
+              currentUser.anh3x4 = res.photoUrl;
+              localStorage.setItem(STORAGE_KEY_CURRENT_USER, JSON.stringify(currentUser));
+            }
           }
-          syncSuccess = true;
-        } else if (res.success) {
-          syncSuccess = true;
         } else {
           syncError = res.message || 'Server sync failed';
           console.warn('GAS uploadPhoto returned error:', res);
         }
       } catch (err) {
         syncError = err.message || 'Network error';
-        console.warn('Sync uploadPhoto to Google Drive failed:', err);
+        console.warn('Sync uploadPhoto failed:', err);
       }
     }
 
     return {
       success: true,
       message: syncSuccess 
-        ? 'Đã tải lên ảnh 3x4 thành công và đồng bộ lên hệ thống! Ảnh đang trong trạng thái CHỜ DUYỆT bởi Ban Quản trị.'
-        : 'Đã lưu ảnh 3x4 tạm thời. ' + (syncError ? '⚠️ Chưa đồng bộ được lên máy chủ (' + syncError + '). Vui lòng thử lại sau!' : 'Đang chờ đồng bộ...'),
+        ? 'Đã tải lên ảnh 3x4 thành công! Ảnh đang trong trạng thái CHỜ DUYỆT bởi Ban Quản trị.'
+        : 'Đã lưu ảnh 3x4 tạm thời. ' + (syncError ? '⚠️ Chưa đồng bộ được (' + syncError + ')' : ''),
       syncedToServer: syncSuccess,
-      photoUrl: compressedPhoto,
+      photoUrl: localPhoto,
       photoStatus: 'CHỜ DUYỆT'
     };
   }
