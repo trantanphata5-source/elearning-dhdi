@@ -370,83 +370,59 @@ class ApiService {
       throw new Error('Mật khẩu mới phải có độ dài tối thiểu 6 ký tự');
     }
 
-    // 1. Nếu có kết nối API, gửi lên Google Apps Script để xác thực và đổi trực tiếp trên Google Sheet
-    if (this.apiUrl) {
+    const apiUrl = this.getApiUrl();
+    if (!apiUrl) {
+      throw new Error('Chưa cấu hình URL máy chủ API Google Apps Script!');
+    }
+
+    let resJson;
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        redirect: 'follow',
+        body: JSON.stringify({
+          action: 'changePassword',
+          masv: cleanMasv,
+          oldPassword: cleanOld,
+          newPassword: cleanNew
+        })
+      });
+
+      const responseText = await response.text();
       try {
-        const response = await fetch(this.apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          redirect: 'follow',
-          body: JSON.stringify({
-            action: 'changePassword',
-            masv: cleanMasv,
-            oldPassword: cleanOld,
-            newPassword: cleanNew
-          })
-        });
-
-        const responseText = await response.text();
-        let resJson;
-        try {
-          resJson = JSON.parse(responseText);
-        } catch (e) {
-          throw new Error('Máy chủ phản hồi không đúng định dạng');
-        }
-
-        if (resJson && resJson.success) {
-          // Cập nhật Local Storage sau khi đổi thành công trên máy chủ
-          const list = this.getLocalStudents();
-          const idx = list.findIndex(s => String(s.masv).trim() === cleanMasv);
-          if (idx !== -1) {
-            list[idx].matkhau = cleanNew;
-            this.saveLocalStudents(list);
-          }
-
-          const currentUser = this.getCurrentUser();
-          if (currentUser && String(currentUser.masv).trim() === cleanMasv) {
-            currentUser.matkhau = cleanNew;
-            localStorage.setItem(STORAGE_KEY_CURRENT_USER, JSON.stringify(currentUser));
-          }
-
-          return {
-            success: true,
-            message: resJson.message || 'Đổi mật khẩu thành công! Hãy ghi nhớ mật khẩu mới của bạn.'
-          };
-        } else {
-          // Máy chủ trả về lỗi (ví dụ: Mật khẩu cũ không chính xác)
-          throw new Error(resJson.message || 'Mật khẩu cũ không chính xác!');
-        }
-      } catch (err) {
-        // Nếu là lỗi logic từ server (sai mật khẩu), ném lỗi ra ngay
-        if (err.message && !err.message.includes('fetch') && !err.message.includes('NetworkError') && !err.message.includes('Failed to fetch')) {
-          throw err;
-        }
-        console.warn('Sync changePassword to API failed, falling back to local:', err);
+        resJson = JSON.parse(responseText);
+      } catch (e) {
+        console.error('GAS response:', responseText);
+        throw new Error('Máy chủ phản hồi không hợp lệ. Vui lòng kiểm tra lại Deployment Apps Script!');
       }
+    } catch (fetchErr) {
+      console.error('Change password fetch error:', fetchErr);
+      throw new Error(fetchErr.message || 'Không thể kết nối đến máy chủ Google Apps Script.');
     }
 
-    // 2. Chế độ ngoại tuyến (Local Fallback khi không có mạng)
-    const list = this.getLocalStudents();
-    const idx = list.findIndex(s => String(s.masv).trim() === cleanMasv);
+    if (resJson && resJson.success) {
+      // Cập nhật Local Storage sau khi Google Sheet đã lưu thành công
+      const list = this.getLocalStudents();
+      const idx = list.findIndex(s => String(s.masv).trim() === cleanMasv);
+      if (idx !== -1) {
+        list[idx].matkhau = cleanNew;
+        this.saveLocalStudents(list);
+      }
 
-    if (idx === -1) {
-      throw new Error('Không tìm thấy tài khoản sinh viên');
+      const currentUser = this.getCurrentUser();
+      if (currentUser && String(currentUser.masv).trim() === cleanMasv) {
+        currentUser.matkhau = cleanNew;
+        localStorage.setItem(STORAGE_KEY_CURRENT_USER, JSON.stringify(currentUser));
+      }
+
+      return {
+        success: true,
+        message: resJson.message || 'Đổi mật khẩu thành công! Mật khẩu mới đã được cập nhật vào Google Sheet.'
+      };
+    } else {
+      throw new Error((resJson && resJson.message) || 'Đổi mật khẩu thất bại trên Google Sheet!');
     }
-
-    if (list[idx].matkhau && String(list[idx].matkhau).trim() !== cleanOld) {
-      throw new Error('Mật khẩu cũ không chính xác!');
-    }
-
-    list[idx].matkhau = cleanNew;
-    this.saveLocalStudents(list);
-
-    const currentUser = this.getCurrentUser();
-    if (currentUser && String(currentUser.masv).trim() === cleanMasv) {
-      currentUser.matkhau = cleanNew;
-      localStorage.setItem(STORAGE_KEY_CURRENT_USER, JSON.stringify(currentUser));
-    }
-
-    return { success: true, message: 'Đổi mật khẩu thành công! Hãy ghi nhớ mật khẩu mới của bạn.' };
   }
 
   // 7. Cập nhật ảnh 3x4 (Lưu trực tiếp vào Google Sheet)
