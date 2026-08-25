@@ -5138,9 +5138,9 @@ const COURSE_INFO = {
   totalStudents: 85,
   totalClasses: 5,
   sheetUrl: "https://docs.google.com/spreadsheets/d/14tqLynkXE4gAkya9wSJeBTfE8zGLyIt13GmNiO5JpOM/edit?usp=sharing",
-  supportProgramUrl: "https://cam-ket-tcg-bc-xet-thau.vercel.app/",
-  supportVideoUrl: "https://youtu.be/5007CnK9BDA",
-  supportVideoEmbed: "https://www.youtube.com/embed/5007CnK9BDA?autoplay=0&rel=0"
+  supportProgramUrl: "/mo-phong-chuong-3.html",
+  supportVideoUrl: "https://youtu.be/nwzSas57CNo",
+  supportVideoEmbed: "https://www.youtube.com/embed/nwzSas57CNo?autoplay=0&rel=0"
 };
 
 const ANNOUNCEMENTS = [
@@ -7103,9 +7103,9 @@ function renderSupportView() {
         <div class="access-action-wrap">
           ${isApproved ? `
             <a href="${COURSE_INFO.supportProgramUrl}" target="_blank" class="btn btn-accent btn-lg" style="box-shadow: 0 0 25px var(--accent-glow);">
-              <i class="fa-solid fa-arrow-up-right-from-square"></i> Truy Cập Chương Trình Sư Phạm Ngay
+              <i class="fa-solid fa-play"></i> Mở Chương Trình Mô Phỏng Tương Tác
             </a>
-            <small style="color: var(--accent); font-size: 0.8rem; font-weight: 600;">Link: cam-ket-tcg-bc-xet-thau.vercel.app</small>
+            <small style="color: var(--accent); font-size: 0.8rem; font-weight: 600;">Mô phỏng tương tác — Chương 3: Khí cụ điện và hồ quang</small>
           ` : `
             <button class="btn btn-secondary btn-lg" disabled title="Vui lòng cập nhật ảnh 3x4 và chờ duyệt">
               <i class="fa-solid fa-lock"></i> Chưa Đủ Điều Kiện Truy Cập
@@ -7117,6 +7117,7 @@ function renderSupportView() {
         </div>
       </div>
 
+      ${(user && user.role === 'ADMIN') ? `
       <div class="support-features-grid">
         <div class="feature-card">
           <div class="feature-icon-box"><i class="fa-solid fa-chalkboard"></i></div>
@@ -7136,6 +7137,7 @@ function renderSupportView() {
           <p>Cấp chứng nhận hoàn thành khóa hỗ trợ sư phạm kỹ thuật cho toàn bộ học viên đạt chuẩn hồ sơ và bài kiểm tra.</p>
         </div>
       </div>
+      ` : ''}
     </div>
   `;
 }

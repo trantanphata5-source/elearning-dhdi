@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mô phỏng tương tác — Chương 3: Khí cụ điện và hồ quang</title>
+<style>
+  :root{
+    --bg:#3257B8; --card:#2A499E; --card2:#243F8C; --line:#7C99DA;
+    --am:#FFD166; --lb:#A9BCE6; --w:#fff; --rd:#FF9A8A; --gn:#8FE3AC;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%}
+  body{background:var(--bg); color:var(--w); overflow:hidden;
+    font-family:'Roboto','Segoe UI',Arial,sans-serif;
+    display:flex; align-items:center; justify-content:center}
+  #stage{position:relative; width:100vw; height:56.25vw; max-height:100vh; max-width:177.78vh;
+    container-type:inline-size}
+  .sl{position:absolute; inset:0; display:none; padding:3.2% 4.2% 4%; flex-direction:column}
+  .sl.on{display:flex}
+  h1{font-size:3.3cqw; font-weight:500; border-left:.55cqw solid var(--am); padding-left:1.2cqw; line-height:1.15}
+  .sub{color:var(--lb); font-size:1.45cqw; margin-top:.7cqw}
+  .row{display:flex; gap:2.2cqw; flex:1; margin-top:1.8cqw; min-height:0}
+  .col{display:flex; flex-direction:column; gap:.9cqw; min-width:0}
+  .plot{flex:1; min-height:0; background:rgba(0,0,0,.10); border-radius:.9cqw; padding:.6cqw}
+  svg{width:100%; height:100%; display:block; overflow:visible}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:.9cqw; padding:1cqw 1.2cqw}
+  .card2{background:var(--card2); border:1px solid var(--line); border-radius:.9cqw; padding:1cqw 1.2cqw}
+  .lab{font-size:1.2cqw; color:var(--lb); margin-bottom:.45cqw}
+  .big{font-size:2.4cqw; font-weight:500; color:var(--am); line-height:1.2}
+  .mid{font-size:1.7cqw; font-weight:500; line-height:1.3}
+  .txt{font-size:1.32cqw; line-height:1.55}
+  .btns{display:flex; flex-wrap:wrap; gap:.6cqw}
+  button{font-family:inherit; font-size:1.25cqw; color:var(--w); background:var(--card);
+    border:1px solid var(--line); border-radius:.6cqw; padding:.65cqw 1cqw; cursor:pointer}
+  button:hover{border-color:var(--am)}
+  button.on{background:var(--am); color:#243F8C; border-color:var(--am); font-weight:500}
+  button.done{background:#2F6B49; border-color:#8FE3AC; color:#DFF6E7}
+  .ctrl{display:grid; grid-template-columns:11cqw 1fr 6.5cqw; align-items:center; gap:.9cqw; margin-top:.6cqw}
+  .ctrl label{font-size:1.3cqw; color:var(--lb)}
+  .ctrl output{font-size:1.45cqw; font-weight:500; text-align:right; font-variant-numeric:tabular-nums}
+  input[type=range]{-webkit-appearance:none; appearance:none; height:.85cqw; border-radius:1cqw;
+    background:rgba(255,255,255,.22); outline:none; cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:1.65cqw; height:1.65cqw;
+    border-radius:50%; background:var(--am); border:none; cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:1.65cqw; height:1.65cqw; border-radius:50%; background:var(--am); border:none}
+  .ok{color:var(--gn)} .bad{color:var(--rd)} .part{color:var(--am)}
+  #nav{position:absolute; right:4.2%; bottom:1.6%; display:flex; gap:.9cqw; align-items:center;
+    font-size:1.15cqw; color:var(--lb)}
+  #dots{display:flex; gap:.55cqw}
+  .dot{width:.82cqw; height:.82cqw; border-radius:50%; background:rgba(255,255,255,.3); cursor:pointer}
+  .dot.on{background:var(--am)}
+  #hint{position:absolute; left:4.2%; bottom:1.6%; font-size:1.1cqw; color:rgba(255,255,255,.55)}
+  .menu{display:grid; grid-template-columns:1fr 1fr; gap:1.3cqw; margin-top:2.2cqw}
+  .mi{background:var(--card); border:1px solid var(--line); border-radius:1cqw; padding:1.4cqw 1.7cqw; cursor:pointer}
+  .mi:hover{border-color:var(--am)}
+  .mi b{display:block; font-size:1.9cqw; font-weight:500; color:var(--am); margin-bottom:.45cqw}
+  .mi span{font-size:1.3cqw; color:var(--lb); line-height:1.5}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- 0 MỤC LỤC -->
+  <section class="sl on">
+    <h1>Mô phỏng tương tác — Chương 3: Khí cụ điện và hồ quang</h1>
+    <div class="sub">Học phần 2114450 · dùng kèm slide, chạy offline, không cần internet</div>
+    <div class="menu">
+      <div class="mi" data-go="1"><b>1 · Thiết bị nào cắt được gì</b><span>Chọn thiết bị và tình huống rồi bấm thao tác — xem được phép hay không và hậu quả</span></div>
+      <div class="mi" data-go="2"><b>2 · Hồ quang tắt lúc nào</b><span>Dòng qua điểm không, độ bền cách điện đua với điện áp phục hồi</span></div>
+      <div class="mi" data-go="3"><b>3 · Kéo dài hồ quang để dập</b><span>Kéo chiều dài hồ quang, xem Uhq vượt điện áp nguồn ở đâu</span></div>
+      <div class="mi" data-go="4"><b>4 · Trình tự thao tác cô lập ngăn lộ</b><span>Bấm theo thứ tự, sai thứ tự sẽ báo hậu quả</span></div>
+    </div>
+    <div class="card2" style="margin-top:1.8cqw" class="txt">
+      <div class="txt">Mũi tên ← → chuyển trang · số 1–4 nhảy nhanh · cuộn chuột trên đồ thị để đổi thông số chính · F11 toàn màn hình</div>
+    </div>
+  </section>
+
+  <!-- 1 MA TRẬN ĐÓNG CẮT -->
+  <section class="sl">
+    <h1>Thiết bị nào cắt được gì</h1>
+    <div class="sub">Chọn một thiết bị và một tình huống, rồi xem kết luận</div>
+    <div class="row">
+      <div class="col" style="flex:1">
+        <div class="card">
+          <div class="lab">Thiết bị</div>
+          <div class="btns" id="devs"></div>
+        </div>
+        <div class="card">
+          <div class="lab">Tình huống khi thao tác cắt</div>
+          <div class="btns" id="sits"></div>
+        </div>
+        <div class="card2" style="flex:1">
+          <div class="lab">Ghi nhớ</div>
+          <div class="txt">Chỉ máy cắt và recloser được thiết kế để cắt dòng ngắn mạch. Dao cách ly không có buồng dập hồ quang nên chỉ được thao tác sau khi mạch đã được cắt bằng thiết bị khác.</div>
+        </div>
+      </div>
+      <div class="col" style="flex:1.15">
+        <div class="card2" style="flex:1">
+          <div class="lab" id="m_head">Kết luận</div>
+          <div class="big" id="m_verdict">Chọn thiết bị và tình huống</div>
+          <div class="txt" id="m_note" style="margin-top:1cqw"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 DẬP TẠI ĐIỂM DÒNG QUA KHÔNG -->
+  <section class="sl" data-primary="a_k">
+    <h1>Hồ quang tắt lúc nào — cuộc đua tại điểm dòng qua không</h1>
+    <div class="sub">Sau khi tiếp điểm tách, hồ quang chỉ tắt nếu độ bền cách điện phục hồi nhanh hơn điện áp đặt lại</div>
+    <div class="row">
+      <div class="col" style="flex:1.5">
+        <div class="plot" data-plot="arc"><svg id="svg_arc" viewBox="0 0 640 300"></svg></div>
+        <div class="btns" id="media" style="margin-top:.8cqw"></div>
+        <div class="ctrl"><label>Độ bền phục hồi</label><input type="range" id="a_k" min="2" max="60" step="1" value="10"><output id="o_a_k"></output></div>
+        <div class="ctrl"><label>Điện áp phục hồi</label><input type="range" id="a_u" min="5" max="40" step="1" value="20"><output id="o_a_u"></output></div>
+      </div>
+      <div class="col" style="flex:1">
+        <div class="card2"><div class="lab">Kết quả tại điểm dòng qua không</div><div class="mid" id="a_res">—</div></div>
+        <div class="card2"><div class="lab">Tốc độ tăng: độ bền so với điện áp</div><div class="big" id="a_win">—</div></div>
+        <div class="card" style="flex:1"><div class="txt" id="a_note"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 KÉO DÀI HỒ QUANG -->
+  <section class="sl" data-primary="l_len">
+    <h1>Kéo dài hồ quang để dập</h1>
+    <div class="sub">Uhq = Uc + E·l + Ua — chỉ thành phần thân hồ quang tăng theo chiều dài</div>
+    <div class="row">
+      <div class="col" style="flex:1.5">
+        <div class="plot" data-plot="len"><svg id="svg_len" viewBox="0 0 640 300"></svg></div>
+        <div class="ctrl"><label>Chiều dài l</label><input type="range" id="l_len" min="2" max="120" step="1" value="20"><output id="o_l_len"></output></div>
+        <div class="ctrl"><label>Gradient E</label><input type="range" id="l_e" min="5" max="60" step="1" value="15"><output id="o_l_e"></output></div>
+        <div class="ctrl"><label>Điện áp nguồn</label><input type="range" id="l_us" min="200" max="2000" step="50" value="800"><output id="o_l_us"></output></div>
+      </div>
+      <div class="col" style="flex:1">
+        <div class="card2"><div class="lab">Điện áp hồ quang Uhq</div><div class="big" id="l_uhq">—</div></div>
+        <div class="card2"><div class="lab">Chiều dài tối thiểu để dập</div><div class="big" id="l_min">—</div></div>
+        <div class="card2"><div class="lab">Kết luận</div><div class="mid" id="l_res">—</div></div>
+        <div class="card" style="flex:1"><div class="txt">Uc và Ua là điện áp rơi ở hai cực, gần như không đổi. Muốn Uhq vượt điện áp nguồn thì chỉ còn cách tăng l hoặc tăng E — chia hồ quang thành nhiều đoạn ngắn chính là cách nhân số cặp cực để tăng tổng Uc + Ua.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 TRÌNH TỰ THAO TÁC -->
+  <section class="sl">
+    <h1>Trình tự thao tác cô lập một ngăn lộ</h1>
+    <div class="sub">Bấm các bước theo đúng thứ tự — sai thứ tự sẽ báo hậu quả</div>
+    <div class="row">
+      <div class="col" style="flex:1.35">
+        <div class="plot" data-plot="ops"><svg id="svg_ops" viewBox="0 0 620 300"></svg></div>
+      </div>
+      <div class="col" style="flex:1">
+        <div class="card"><div class="lab">Các bước có thể thao tác</div><div class="btns" id="steps"></div></div>
+        <div class="card2"><div class="lab">Phản hồi</div><div class="mid" id="op_msg">Bắt đầu: ngăn lộ đang mang điện và mang tải</div></div>
+        <div class="card2"><div class="lab">Tiến độ</div><div class="big" id="op_prog">0 / 5</div></div>
+        <div class="btns"><button id="op_reset">Làm lại từ đầu</button></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="hint">← → chuyển trang · 1–4 nhảy nhanh · cuộn chuột trên đồ thị</div>
+  <div id="nav"><span id="pg"></span><div id="dots"></div></div>
+</div>
+
+<script>
+const SL=[...document.querySelectorAll('.sl')], dots=document.getElementById('dots');
+SL.forEach((_,i)=>{const d=document.createElement('div');d.className='dot';d.onclick=()=>go(i);dots.appendChild(d);});
+let cur=0;
+function go(i){cur=Math.max(0,Math.min(SL.length-1,i));
+  SL.forEach((s,k)=>s.classList.toggle('on',k===cur));
+  [...dots.children].forEach((d,k)=>d.classList.toggle('on',k===cur));
+  document.getElementById('pg').textContent=cur+' / '+(SL.length-1); draw();}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){go(cur+1);e.preventDefault();}
+  if(e.key==='ArrowLeft'||e.key==='PageUp'){go(cur-1);e.preventDefault();}
+  if(/^[0-4]$/.test(e.key))go(+e.key);});
+document.querySelectorAll('.mi').forEach(m=>m.onclick=()=>go(+m.dataset.go));
+document.querySelectorAll('.plot').forEach(p=>p.addEventListener('wheel',e=>{
+  const id=SL[cur].dataset.primary; if(!id)return; const inp=document.getElementById(id); if(!inp)return;
+  const st=(parseFloat(inp.step)||1)*3; inp.value=(+inp.value)+(e.deltaY<0?st:-st);
+  inp.dispatchEvent(new Event('input')); e.preventDefault();},{passive:false}));
+
+const NS='http://www.w3.org/2000/svg';
+function sv(id){const s=document.getElementById(id);while(s.firstChild)s.removeChild(s.firstChild);return s;}
+function el(s,n,a){const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);s.appendChild(e);return e;}
+function ln(s,x1,y1,x2,y2,c,w,d){el(s,'line',{x1,y1,x2,y2,stroke:c,'stroke-width':w,...(d?{'stroke-dasharray':d}:{})});}
+function tx(s,x,y,t,sz,c,an){const e=el(s,'text',{x,y,fill:c,'font-size':sz,'font-family':'Roboto,Arial',...(an?{'text-anchor':an}:{})});e.textContent=t;return e;}
+function pl(s,p,c,w){el(s,'polyline',{points:p.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' '),fill:'none',stroke:c,'stroke-width':w,'stroke-linejoin':'round'});}
+const AM='#FFD166',W='#fff',LB='#A9BCE6',GR='rgba(255,255,255,.22)',RD='#FF9A8A',GN='#8FE3AC';
+const v=id=>document.getElementById(id).value, out=(id,t)=>{const o=document.getElementById('o_'+id); if(o)o.textContent=t;};
+
+/* ---------- 1. MA TRẬN ĐÓNG CẮT ---------- */
+const DEV=[['cb','Máy cắt'],['ds','Dao cách ly'],['dnt','Dao ngắt tải'],
+           ['fco','Cầu chì tự rơi FCO'],['rec','Recloser'],['lbfco','LBFCO']];
+const SIT=[['nl','Mạch không tải'],['tl','Mang tải định mức'],['nm','Đang ngắn mạch']];
+const MTX={
+ 'cb|nl':['ok','Được phép','Máy cắt đóng cắt được ở mọi chế độ. Thao tác không tải là trường hợp nhẹ nhất.'],
+ 'cb|tl':['ok','Được phép','Buồng dập hồ quang xử lý được dòng tải định mức một cách bình thường.'],
+ 'cb|nm':['ok','Được phép','Đây là thiết bị duy nhất trong nhóm được thiết kế để cắt dòng ngắn mạch — với điều kiện dòng tại điểm lắp không vượt Icắt định mức ghi trên nhãn.'],
+ 'ds|nl':['part','Chỉ khi dòng rất nhỏ','Dao cách ly chỉ được thao tác với dòng điện dung của đoạn đường dây ngắn hoặc dòng từ hoá của MBA không tải. Không phải mọi mạch không tải đều được phép.'],
+ 'ds|tl':['bad','KHÔNG được phép','Không có buồng dập hồ quang. Hồ quang bị kéo dài theo lưỡi dao, cháy lan sang các pha, phá hỏng dao và gây nguy hiểm cho người thao tác. Đây là lỗi thao tác kinh điển.'],
+ 'ds|nm':['bad','TUYỆT ĐỐI KHÔNG','Ngoài hồ quang, lực điện động của dòng ngắn mạch còn đủ lớn để làm biến dạng lưỡi dao. Hậu quả thường là phá hỏng cả ngăn lộ.'],
+ 'dnt|nl':['ok','Được phép','Trường hợp nhẹ, hoàn toàn trong khả năng của buồng dập nhỏ.'],
+ 'dnt|tl':['ok','Được phép','Dao ngắt tải chính là dao cách ly được bổ sung buồng dập hồ quang, nên cắt được tới dòng tải định mức.'],
+ 'dnt|nm':['bad','KHÔNG cắt được','Đóng vào ngắn mạch thì chịu được, nhưng cắt dòng ngắn mạch thì không. Việc cắt ngắn mạch phải do máy cắt hoặc cầu chì phía trên đảm nhận.'],
+ 'fco|nl':['part','Thao tác được bằng cây cách điện','Chỉ khi mạch đã không còn tải. Cầu chì không phải thiết bị dùng để thao tác thường xuyên.'],
+ 'fco|tl':['bad','KHÔNG dùng để cắt tải','Muốn cắt tải trên nhánh rẽ thì phải dùng LBFCO, tức loại có thêm chức năng dao phụ tải.'],
+ 'fco|nm':['ok','Tự cắt','Dây chảy đứt, ống cầu chì tự rơi xuống nên nhìn từ dưới đất là biết ngay pha nào đã tác động — trong phạm vi khả năng cắt định mức của cầu chì.'],
+ 'rec|nl':['ok','Được phép','Recloser là máy cắt đặt trên trụ, thao tác được mọi chế độ.'],
+ 'rec|tl':['ok','Được phép','Cắt được dòng tải, thường điều khiển được từ xa qua SCADA.'],
+ 'rec|nm':['ok','Được phép','Cắt dòng ngắn mạch rồi tự đóng lại theo chu trình đã đặt. Nếu sự cố vẫn tồn tại thì cắt dứt điểm và khoá lại.'],
+ 'lbfco|nl':['ok','Được phép','Phần dao phụ tải thao tác bình thường.'],
+ 'lbfco|tl':['ok','Được phép','Đây là ưu điểm chính của LBFCO so với FCO thường: cắt được dòng tải.'],
+ 'lbfco|nm':['part','Cầu chì xử lý, không phải dao','Phần dao phụ tải không cắt được ngắn mạch. Dòng ngắn mạch do dây chảy bên trong xử lý.']};
+let selD=null, selS=null;
+(function(){
+  const dv=document.getElementById('devs'), st=document.getElementById('sits');
+  DEV.forEach(([id,n])=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>{selD=id;mark();};b.dataset.d=id;dv.appendChild(b);});
+  SIT.forEach(([id,n])=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>{selS=id;mark();};b.dataset.s=id;st.appendChild(b);});
+})();
+function mark(){
+  document.querySelectorAll('#devs button').forEach(b=>b.classList.toggle('on',b.dataset.d===selD));
+  document.querySelectorAll('#sits button').forEach(b=>b.classList.toggle('on',b.dataset.s===selS));
+  const vd=document.getElementById('m_verdict'), nt=document.getElementById('m_note');
+  if(!selD||!selS){vd.textContent='Chọn thiết bị và tình huống';vd.className='big';nt.textContent='';return;}
+  const r=MTX[selD+'|'+selS];
+  vd.textContent=r[1]; vd.className='big '+r[0]; nt.textContent=r[2];
+  document.getElementById('m_head').textContent=
+    DEV.find(d=>d[0]===selD)[1]+'  ·  '+SIT.find(s=>s[0]===selS)[1];
+}
+
+/* ---------- 2. DẬP TẠI ĐIỂM DÒNG QUA KHÔNG ---------- */
+const MED=[['Dầu / không khí',6],['SF6',22],['Chân không',48]];
+(function(){const m=document.getElementById('media');
+  MED.forEach(([n,k])=>{const b=document.createElement('button');b.textContent=n;
+    b.onclick=()=>{document.getElementById('a_k').value=k;drawArc();};m.appendChild(b);});})();
+function drawArc(){
+  const k=+v('a_k'), um=+v('a_u');
+  out('a_k',k+' kV/ms'); out('a_u',um+' kV');
+  const s=sv('svg_arc'), L=52,R=612,TP=22,B=252, Tm=6;
+  const X=t=>L+(R-L)*t/Tm, Y=u=>B-(B-TP)*Math.min(u,50)/50;
+  for(let u=0;u<=50;u+=10){ln(s,L,Y(u),R,Y(u),GR,1);tx(s,L-8,Y(u)+4,u,11,LB,'end');}
+  ln(s,L,B,R,B,'rgba(255,255,255,.45)',1.2);
+  for(let t=0;t<=6;t++)tx(s,X(t),B+16,t,11,LB,'middle');
+  tx(s,X(3),B+34,'ms sau điểm dòng qua không',12,LB,'middle');
+  tx(s,L-34,TP+2,'kV',12,LB);
+  const P=[],Q=[]; let cross=null;
+  for(let i=0;i<=240;i++){const t=i*Tm/240;
+    const d=k*t, uu=um*Math.sin(Math.PI*t/10);
+    P.push([X(t),Y(d)]); Q.push([X(t),Y(uu)]);
+    if(cross===null&&i>0&&d<uu)cross=t;}
+  pl(s,Q,RD,2.4); pl(s,P,GN,2.6);
+  tx(s,X(4.6),Y(k*4.6)-10,'độ bền cách điện',12,GN);
+  tx(s,X(4.6),Y(um*Math.sin(Math.PI*4.6/10))+18,'điện áp phục hồi',12,RD);
+  const okk=cross===null;
+  if(!okk){const t=cross;el(s,'circle',{cx:X(t),cy:Y(k*t),r:6,fill:RD});
+    tx(s,X(t)+9,Y(k*t)-8,'tái phóng điện',12,RD);}
+  const res=document.getElementById('a_res');
+  res.textContent=okk?'Dập thành công':'Hồ quang cháy lại';
+  res.className='mid '+(okk?'ok':'bad');
+  const du=(um*Math.PI/10);
+  document.getElementById('a_win').textContent=k.toFixed(0)+' / '+du.toFixed(1)+' = '+(k/du).toFixed(2)+' lần';
+  document.getElementById('a_note').innerHTML=okk
+   ?'Độ bền cách điện của khe hở phục hồi nhanh hơn điện áp mà nguồn đặt trở lại, nên hồ quang không mồi lại được. Đây là lý do chân không và SF6 dập tốt hơn dầu và không khí.'
+   :'Điện áp phục hồi vượt độ bền cách điện trước khi khe hở kịp cách điện, hồ quang mồi lại và máy cắt phải chờ tới điểm dòng qua không tiếp theo. Thử tăng độ bền phục hồi hoặc giảm điện áp phục hồi.';
+}
+
+/* ---------- 3. KÉO DÀI HỒ QUANG ---------- */
+function drawLen(){
+  const l=+v('l_len'), E=+v('l_e'), us=+v('l_us');
+  out('l_len',l+' mm'); out('l_e',E+' V/mm'); out('l_us',us+' V');
+  const Uc=18, Ua=12, uhq=Uc+Ua+E*l;
+  const lmin=(us-Uc-Ua)/E;
+  const s=sv('svg_len'), L=56,R=610,TP=22,B=250, Lm=120;
+  const umax=Math.max(us*1.25, 400);
+  const X=x=>L+(R-L)*x/Lm, Y=u=>B-(B-TP)*Math.min(u,umax)/umax;
+  for(let i=0;i<=4;i++){const u=umax*i/4; ln(s,L,Y(u),R,Y(u),GR,1); tx(s,L-8,Y(u)+4,Math.round(u),11,LB,'end');}
+  ln(s,L,B,R,B,'rgba(255,255,255,.45)',1.2);
+  for(let x=0;x<=120;x+=20)tx(s,X(x),B+16,x,11,LB,'middle');
+  tx(s,X(60),B+34,'chiều dài hồ quang l (mm)',12,LB,'middle');
+  ln(s,L,Y(us),R,Y(us),AM,1.8,'5 4'); tx(s,R,Y(us)-8,'điện áp nguồn',12,AM,'end');
+  const P=[]; for(let x=0;x<=Lm;x+=2)P.push([X(x),Y(Uc+Ua+E*x)]);
+  pl(s,P,W,2.6);
+  el(s,'circle',{cx:X(l),cy:Y(uhq),r:6,fill:AM});
+  if(lmin>0&&lmin<Lm){ln(s,X(lmin),TP,X(lmin),B,GN,1.4,'3 3');
+    tx(s,X(lmin)+6,TP+14,'l tối thiểu',12,GN);}
+  document.getElementById('l_uhq').textContent=Math.round(uhq)+' V';
+  document.getElementById('l_min').textContent=lmin<=0?'đã đủ':(lmin>Lm?'> 120 mm':Math.ceil(lmin)+' mm');
+  const r=document.getElementById('l_res');
+  const okk=uhq>=us; r.textContent=okk?'Hồ quang bị dập':'Hồ quang còn duy trì';
+  r.className='mid '+(okk?'ok':'bad');
+}
+
+/* ---------- 4. TRÌNH TỰ THAO TÁC ---------- */
+const OPS=[['cb','Cắt máy cắt'],['kt','Kiểm tra máy cắt đã cắt'],
+           ['dst','Cắt dao cách ly phía tải'],['dsn','Cắt dao cách ly phía nguồn'],
+           ['es','Đóng dao nối đất']];
+const WHY={cb:'Máy cắt là thiết bị duy nhất cắt được dòng tải, phải cắt nó trước tiên.',
+ kt:'Phải xác nhận máy cắt đã cắt thật, bằng chỉ thị tại chỗ hoặc đồng hồ dòng — không tin mỗi tín hiệu từ xa.',
+ dst:'Cắt dao phía tải trước để đoạn giữa dao và máy cắt không còn nguồn nuôi.',
+ dsn:'Sau đó mới cắt dao phía nguồn, tạo khoảng cách cách điện nhìn thấy được.',
+ es:'Cuối cùng đóng dao nối đất để triệt tiêu điện áp cảm ứng và tĩnh điện dư.'};
+const HARM={cb:'Chưa cắt máy cắt mà thao tác dao cách ly là cắt tải bằng dao — hồ quang cháy lan, phá hỏng thiết bị.',
+ kt:'Bỏ bước kiểm tra là thao tác dao trong khi máy cắt có thể vẫn đang đóng.',
+ dst:'Chưa cắt dao phía tải mà đã cắt dao phía nguồn thì đoạn thanh dẫn giữa vẫn có thể mang điện từ phía tải.',
+ dsn:'Chưa cách ly hai phía mà đã đóng dao nối đất là tạo ngắn mạch trực tiếp qua dao nối đất.',
+ es:'Chưa đóng nối đất mà đã vào làm việc là làm việc trên thiết bị chưa được triệt điện áp dư.'};
+let stepIdx=0, state={cb:1,dst:1,dsn:1,es:0,checked:false};
+(function(){const c=document.getElementById('steps');
+  OPS.forEach(([id,n])=>{const b=document.createElement('button');b.textContent=n;b.dataset.o=id;
+    b.onclick=()=>doOp(id);c.appendChild(b);});
+  document.getElementById('op_reset').onclick=()=>{stepIdx=0;state={cb:1,dst:1,dsn:1,es:0,checked:false};
+    document.querySelectorAll('#steps button').forEach(b=>b.classList.remove('done'));
+    msg('Bắt đầu: ngăn lộ đang mang điện và mang tải','');drawOps();};})();
+function msg(t,cls){const m=document.getElementById('op_msg');m.textContent=t;m.className='mid '+cls;}
+function doOp(id){
+  const want=OPS[stepIdx][0];
+  if(id!==want){msg('Sai thứ tự. '+HARM[want],'bad');return;}
+  if(id==='cb')state.cb=0; if(id==='kt')state.checked=true;
+  if(id==='dst')state.dst=0; if(id==='dsn')state.dsn=0; if(id==='es')state.es=1;
+  document.querySelector('#steps button[data-o="'+id+'"]').classList.add('done');
+  stepIdx++;
+  document.getElementById('op_prog').textContent=stepIdx+' / 5';
+  msg(stepIdx===5?'Hoàn tất — ngăn lộ đã được cô lập và tiếp đất, có thể vào làm việc.':WHY[id],
+      stepIdx===5?'ok':'');
+  drawOps();
+}
+function drawOps(){
+  const s=sv('svg_ops'), xc=300;
+  ln(s,60,40,540,40,W,3);
+  tx(s,60,28,'Thanh cái 22 kV',13,AM);
+  const seg=(y1,y2)=>ln(s,xc,y1,xc,y2,W,2);
+  seg(40,80);
+  // DS nguồn
+  el(s,'circle',{cx:xc,cy:80,r:4,fill:W});
+  el(s,'circle',{cx:xc,cy:118,r:4,fill:W});
+  if(state.dsn)ln(s,xc,80,xc,118,W,3); else ln(s,xc,80,xc+34,112,W,3);
+  tx(s,xc+46,102,'DS nguồn '+(state.dsn?'ĐÓNG':'CẮT'),13,state.dsn?W:GN);
+  seg(118,150);
+  // CB
+  el(s,'rect',{x:xc-17,y:150,width:34,height:34,fill:'none',stroke:W,'stroke-width':2.5});
+  if(state.cb){ln(s,xc-12,155,xc+12,179,W,2);ln(s,xc+12,155,xc-12,179,W,2);}
+  tx(s,xc+46,172,'Máy cắt '+(state.cb?'ĐÓNG':'CẮT'),13,state.cb?W:GN);
+  if(state.checked)tx(s,xc+46,190,'đã kiểm tra',12,GN);
+  seg(184,214);
+  // DS tải
+  el(s,'circle',{cx:xc,cy:214,r:4,fill:W});
+  el(s,'circle',{cx:xc,cy:250,r:4,fill:W});
+  if(state.dst)ln(s,xc,214,xc,250,W,3); else ln(s,xc,214,xc+34,244,W,3);
+  tx(s,xc+46,236,'DS tải '+(state.dst?'ĐÓNG':'CẮT'),13,state.dst?W:GN);
+  seg(250,278);
+  tx(s,xc-14,296,'ra phụ tải',12,LB,'middle');
+  // dao nối đất
+  ln(s,xc,232,xc-70,232,W,1.6);
+  if(state.es){ln(s,xc-70,232,xc-70,260,GN,3);
+    for(let i=0;i<3;i++){const w=26-i*8;ln(s,xc-70-w/2,260+i*6,xc-70+w/2,260+i*6,GN,2-i*0.4);}
+    tx(s,xc-150,250,'NỐI ĐẤT',13,GN);}
+  else{ln(s,xc-70,232,xc-96,256,W,3);
+    for(let i=0;i<3;i++){const w=26-i*8;ln(s,xc-70-w/2,266+i*6,xc-70+w/2,266+i*6,'rgba(255,255,255,.4)',1.6);}
+    tx(s,xc-160,250,'dao nối đất MỞ',12,LB);}
+  const live=state.dsn||state.cb;
+  tx(s,60,296,live?'Đoạn thanh dẫn vẫn có thể mang điện':'Đã cách ly hai phía',13,live?RD:GN);
+}
+
+/* ---------- điều phối ---------- */
+function draw(){try{
+  if(cur===1)mark();
+  if(cur===2)drawArc();
+  if(cur===3)drawLen();
+  if(cur===4)drawOps();
+}catch(e){}}
+document.querySelectorAll('input[type=range]').forEach(i=>i.addEventListener('input',draw));
+window.addEventListener('resize',draw);
+go(0);
+</script>
+</body>
+</html>

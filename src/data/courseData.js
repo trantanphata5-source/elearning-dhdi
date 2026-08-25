@@ -25,9 +25,9 @@ export const COURSE_INFO = {
   totalStudents: 85,
   totalClasses: 5,
   sheetUrl: "https://docs.google.com/spreadsheets/d/14tqLynkXE4gAkya9wSJeBTfE8zGLyIt13GmNiO5JpOM/edit?usp=sharing",
-  supportProgramUrl: "https://cam-ket-tcg-bc-xet-thau.vercel.app/",
-  supportVideoUrl: "https://youtu.be/5007CnK9BDA",
-  supportVideoEmbed: "https://www.youtube.com/embed/5007CnK9BDA?autoplay=0&rel=0"
+  supportProgramUrl: "/mo-phong-chuong-3.html",
+  supportVideoUrl: "https://youtu.be/nwzSas57CNo",
+  supportVideoEmbed: "https://www.youtube.com/embed/nwzSas57CNo?autoplay=0&rel=0"
 };
 
 export const ANNOUNCEMENTS = [

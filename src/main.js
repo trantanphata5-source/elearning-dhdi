@@ -944,9 +944,9 @@ function renderSupportView() {
         <div class="access-action-wrap">
           ${isApproved ? `
             <a href="${COURSE_INFO.supportProgramUrl}" target="_blank" class="btn btn-accent btn-lg" style="box-shadow: 0 0 25px var(--accent-glow);">
-              <i class="fa-solid fa-arrow-up-right-from-square"></i> Truy Cập Chương Trình Sư Phạm Ngay
+              <i class="fa-solid fa-play"></i> Mở Chương Trình Mô Phỏng Tương Tác
             </a>
-            <small style="color: var(--accent); font-size: 0.8rem; font-weight: 600;">Link: cam-ket-tcg-bc-xet-thau.vercel.app</small>
+            <small style="color: var(--accent); font-size: 0.8rem; font-weight: 600;">Mô phỏng tương tác — Chương 3: Khí cụ điện và hồ quang</small>
           ` : `
             <button class="btn btn-secondary btn-lg" disabled title="Vui lòng cập nhật ảnh 3x4 và chờ duyệt">
               <i class="fa-solid fa-lock"></i> Chưa Đủ Điều Kiện Truy Cập
@@ -958,6 +958,7 @@ function renderSupportView() {
         </div>
       </div>
 
+      ${(user && user.role === 'ADMIN') ? `
       <div class="support-features-grid">
         <div class="feature-card">
           <div class="feature-icon-box"><i class="fa-solid fa-chalkboard"></i></div>
@@ -977,6 +978,7 @@ function renderSupportView() {
           <p>Cấp chứng nhận hoàn thành khóa hỗ trợ sư phạm kỹ thuật cho toàn bộ học viên đạt chuẩn hồ sơ và bài kiểm tra.</p>
         </div>
       </div>
+      ` : ''}
     </div>
   `;
 }
