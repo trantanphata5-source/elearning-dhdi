@@ -15,10 +15,10 @@ export const COURSE_INFO = {
   cohort: "DHDI21AVL",
   instructor: {
     name: "TS. Nguyễn Ngọc Tuyến",
-    title: "Giảng viên chính",
+    title: "Giảng viên",
     email: "nguyenngoctuyen@iuh.edu.vn",
     phone: "0908.xxx.xxx",
-    office: "Phòng X12.04 - Nhà X",
+    office: "",
     avatar: "/instructor.jpg"
   },
   description: "Học phần trang bị cho sinh viên kiến thức chuyên sâu về sơ đồ nối điện chính, lựa chọn thiết bị điện cao áp trong nhà máy điện và trạm biến áp, tính toán dòng ngắn mạch, hệ thống tự dùng, chống sét và nối đất an toàn trong hệ thống điện công nghiệp và truyền tải.",
@@ -34,29 +34,11 @@ export const ANNOUNCEMENTS = [
   {
     id: 1,
     title: "Thông báo về việc cập nhật Ảnh thẻ 3x4 và kích hoạt tài khoản E-Learning",
-    date: "21/08/2026",
+    date: "28/08/2026",
     badge: "Quan trọng",
     type: "important",
     author: "Ban Cán sự & Giảng viên",
     content: "Yêu cầu toàn bộ sinh viên 5 lớp thuộc khóa DHDI21AVL khẩn trương hoàn thiện đăng ký thông tin cá nhân và cập nhật ảnh thẻ 3x4 để Ban Quản trị phê duyệt và cấp quyền truy cập vào 'Chương trình hỗ trợ sư phạm'."
-  },
-  {
-    id: 2,
-    title: "Lịch nộp Bài tập lớn số 01: Thiết kế sơ đồ nối điện chính TBA 110/22kV",
-    date: "18/08/2026",
-    badge: "Học vụ",
-    type: "info",
-    author: "Bộ môn Hệ thống điện",
-    content: "Hạn chót nộp báo cáo thuyết minh và bản vẽ CAD sơ đồ nối điện chính TBA 110/22kV trước 23:59 ngày 30/09/2026 qua tab Bài tập."
-  },
-  {
-    id: 3,
-    title: "Khai mạc Chương trình Hỗ trợ Sư phạm và Kỹ năng Thực hành Ngành Điện",
-    date: "15/08/2026",
-    badge: "Sự kiện",
-    type: "success",
-    author: "Khoa Công nghệ Điện",
-    content: "Mời các bạn sinh viên theo dõi video giới thiệu tại tab 'Hỗ trợ sư phạm' để nắm bắt đầy đủ quyền lợi, tài liệu và các hỗ trợ chuyên môn trong suốt quá trình học tập."
   }
 ];
 

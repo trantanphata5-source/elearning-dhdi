@@ -33,6 +33,9 @@ window.switchTab = function(tabName) {
   if (tabName === 'admin' && (!state.currentUser || state.currentUser.role !== 'ADMIN')) {
     showToast('Chức năng Quản trị chỉ dành riêng cho Ban Quản Trị hệ thống!', 'error');
     state.currentTab = 'dashboard';
+  } else if (tabName === 'courses' && (!state.currentUser || state.currentUser.role !== 'ADMIN')) {
+    showToast('Học phần đang được cập nhật nội dung bài giảng & bài tập!', 'info');
+    state.currentTab = 'dashboard';
   } else {
     state.currentTab = tabName || 'dashboard';
   }
@@ -255,7 +258,7 @@ function renderLoginPage() {
     <form id="loginForm" class="auth-form">
       <div class="form-group">
         <label class="form-label" for="loginUsername">
-          <i class="fa-solid fa-id-card"></i> Tài khoản (Mã số sinh viên / Quản trị)
+          <i class="fa-solid fa-id-card"></i> Tài khoản (Mã số sinh viên)
         </label>
         <div class="input-with-icon">
           <i class="fa-solid fa-user input-icon"></i>
@@ -297,8 +300,7 @@ function renderLoginPage() {
 
     <div class="auth-demo-hint">
       <p>💡 <strong>Hướng dẫn đăng nhập:</strong></p>
-      <p>• Sinh viên: Nhập <strong>Mã SV</strong> (nếu chưa có mật khẩu, hãy bấm <em>"Điền thông tin kích hoạt"</em> để tạo mật khẩu).</p>
-      <p>• Quản trị viên: Tài khoản <code>admin</code> / Mật khẩu <code>@A12345678</code></p>
+      <p>• Sinh viên: Nhập <strong>Mã số sinh viên</strong> và mật khẩu đã nhận qua Email (nếu chưa kích hoạt, hãy bấm <em>"Điền thông tin kích hoạt"</em> để nhận mật khẩu).</p>
     </div>
   `;
 
@@ -406,7 +408,13 @@ function renderAppHeader() {
     adminNavBtn.style.display = isAdmin ? 'inline-flex' : 'none';
   }
 
-  // 2. Hide or Show Admin Dropdown Item based on user role
+  // 2. Hide or Show Courses Tab on Navbar based on user role (Only Admin can see)
+  const coursesNavBtn = document.getElementById('navTabCoursesBtn') || document.querySelector('.nav-tab-btn[data-tab="courses"]');
+  if (coursesNavBtn) {
+    coursesNavBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+  }
+
+  // 3. Hide or Show Admin Dropdown Item based on user role
   const adminDropdownItem = document.getElementById('dropdownAdminItem');
   if (adminDropdownItem) {
     adminDropdownItem.style.display = isAdmin ? 'flex' : 'none';
@@ -483,7 +491,7 @@ function renderDashboardView() {
               <img src="${COURSE_INFO.instructor.avatar}" class="instructor-avatar" alt="Giảng viên">
               <div class="instructor-info">
                 <h5>${COURSE_INFO.instructor.name}</h5>
-                <p>${COURSE_INFO.instructor.title} • ${COURSE_INFO.instructor.office}</p>
+                <p>${COURSE_INFO.instructor.title}</p>
               </div>
             </div>
           </div>
@@ -568,46 +576,14 @@ function renderDashboardView() {
 
           <div class="section-header" style="margin-top: 10px;">
             <h2 class="section-title"><i class="fa-solid fa-list-check" style="color: #059669;"></i> Tiến độ bài giảng</h2>
-            <button class="btn btn-secondary btn-sm" onclick="switchTab('courses')">Xem tất cả</button>
           </div>
 
-          <div class="course-modules-list">
-            ${CHAPTERS.slice(0, 2).map(chap => `
-              <div class="module-card expanded">
-                <div class="module-header">
-                  <div class="module-title-group">
-                    <span class="module-week-tag">${chap.week}</span>
-                    <h4 class="module-title">${chap.title}</h4>
-                  </div>
-                  <div class="module-meta">
-                    <span style="font-size: 0.85rem; color: #059669; font-weight: 700;">${chap.progress}% Hoàn thành</span>
-                  </div>
-                </div>
-                <div class="module-body">
-                  ${chap.items.map(item => `
-                    <div class="lesson-item">
-                      <div class="lesson-left">
-                        <div class="lesson-icon icon-${item.type}">
-                          <i class="fa-solid fa-${item.type === 'video' ? 'play' : (item.type === 'pdf' ? 'file-pdf' : (item.type === 'quiz' ? 'circle-question' : 'file-lines'))}"></i>
-                        </div>
-                        <div>
-                          <div class="lesson-title">${item.title}</div>
-                          <div class="lesson-sub">${item.duration || item.size || item.deadline || ''}</div>
-                        </div>
-                      </div>
-                      <div style="display: flex; align-items: center; gap: 8px;">
-                        <span class="badge ${item.completed ? 'badge-success' : 'badge-muted'}">
-                          ${item.completed ? 'Đã học' : 'Chưa học'}
-                        </span>
-                        <button class="btn btn-secondary btn-sm" onclick="openLessonViewer('${item.id}')">
-                          <i class="fa-solid fa-eye"></i> Học ngay
-                        </button>
-                      </div>
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-            `).join('')}
+          <div class="stat-card" style="padding: 32px 20px; text-align: center; color: var(--text-muted); border: 1px dashed var(--border-subtle); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
+            <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(5, 150, 105, 0.12); color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 2px;">
+              <i class="fa-solid fa-hourglass-half"></i>
+            </div>
+            <h4 style="color: var(--text-title); font-size: 1.08rem; font-weight: 700; margin: 0;">Đang cập nhật</h4>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 0; max-width: 440px;">Hệ thống bài giảng, slide và bài tập trắc nghiệm đang được cập nhật và sẽ mở theo lịch trình giảng dạy của học phần.</p>
           </div>
         </div>
 
@@ -616,17 +592,12 @@ function renderDashboardView() {
             <h2 class="section-title"><i class="fa-solid fa-calendar-days" style="color: #d97706;"></i> Lịch học & Sự kiện</h2>
           </div>
 
-          <div class="stat-card" style="display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 20px;">
-            ${SCHEDULE.map(s => `
-              <div class="schedule-item">
-                <div class="schedule-day-box"><span>${s.day}</span></div>
-                <div class="schedule-details">
-                  <h5>${s.subject}</h5>
-                  <p><i class="fa-regular fa-clock"></i> ${s.time}</p>
-                  <p><i class="fa-solid fa-location-dot"></i> ${s.room}</p>
-                </div>
-              </div>
-            `).join('')}
+          <div class="stat-card" style="padding: 32px 20px; text-align: center; color: var(--text-muted); border: 1px dashed var(--border-subtle); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
+            <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(217, 119, 6, 0.12); color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 2px;">
+              <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <h4 style="color: var(--text-title); font-size: 1.08rem; font-weight: 700; margin: 0;">Đang cập nhật</h4>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 0;">Thời khóa biểu và lịch học chi tiết các tuần sẽ được thông báo sớm nhất.</p>
           </div>
 
           <div class="section-header" style="margin-top: 10px;">
