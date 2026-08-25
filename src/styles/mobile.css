@@ -1,0 +1,631 @@
+/* ============================================================
+   MOBILE RESPONSIVE STYLES
+   Target: Phones (max-width: 480px)
+   Rule: Desktop & tablet layouts remain COMPLETELY untouched.
+   ============================================================ */
+
+/* ---- NAVBAR & HEADER (Mobile) ---- */
+@media (max-width: 480px) {
+  .header-top-row {
+    padding: 0 10px;
+    height: 52px;
+    gap: 6px;
+  }
+  .brand-logo-img {
+    width: 34px;
+    height: 34px;
+  }
+  .brand-logo-link {
+    gap: 8px;
+  }
+  .brand-university {
+    font-size: 0.5rem;
+    letter-spacing: 0.2px;
+  }
+  .brand-title {
+    font-size: 0.78rem;
+    letter-spacing: -0.1px;
+  }
+  .brand-subtitle {
+    display: none;
+  }
+  .header-time-badge {
+    display: none;
+  }
+  .user-info-text {
+    display: none;
+  }
+  .user-profile-btn {
+    padding: 2px;
+    gap: 4px;
+  }
+  .user-avatar-wrap {
+    width: 32px;
+    height: 32px;
+    font-size: 0.7rem;
+  }
+  .user-profile-btn .fa-chevron-down {
+    display: none;
+  }
+  .theme-toggle-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+
+  /* Nav Row: Horizontal scroll tabs */
+  .header-nav-row {
+    padding: 4px 8px;
+    min-height: 42px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .header-nav-row::-webkit-scrollbar {
+    display: none;
+  }
+  .header-nav {
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+  .nav-tab-btn {
+    font-size: 0.72rem;
+    padding: 6px 10px;
+    white-space: nowrap;
+    gap: 4px;
+    border-radius: 6px;
+    min-width: max-content;
+  }
+  .nav-tab-btn i {
+    font-size: 0.75rem;
+  }
+  .tab-badge {
+    font-size: 0.6rem;
+    padding: 1px 4px;
+  }
+  .nav-quick-tag {
+    display: none;
+  }
+
+  /* Dropdown Menu */
+  .user-dropdown-menu {
+    right: 0;
+    left: auto;
+    min-width: 220px;
+    max-width: calc(100vw - 20px);
+  }
+}
+
+/* ---- AUTH / LOGIN PAGE (Mobile) ---- */
+@media (max-width: 480px) {
+  .auth-page {
+    padding: 12px;
+    align-items: flex-start;
+    padding-top: 5vh;
+  }
+  .auth-card {
+    padding: 24px 18px;
+    max-width: 100%;
+    border-radius: 16px;
+  }
+  .auth-logo-wrap {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 12px;
+  }
+  .auth-university-title {
+    font-size: 0.72rem;
+    letter-spacing: 0.3px;
+  }
+  .auth-title {
+    font-size: 1.25rem !important;
+    letter-spacing: -0.1px;
+    line-height: 1.3;
+  }
+  .auth-subtitle {
+    font-size: 0.82rem;
+  }
+  .auth-cohort-tag {
+    font-size: 0.72rem;
+    padding: 2px 8px;
+  }
+  .form-label {
+    font-size: 0.82rem;
+  }
+  .form-control {
+    font-size: 0.88rem;
+    padding: 10px 14px;
+  }
+  .input-with-icon .input-icon {
+    left: 12px;
+    font-size: 0.85rem;
+  }
+  .input-with-icon input {
+    padding-left: 36px;
+  }
+  .auth-submit-btn {
+    font-size: 0.92rem;
+    padding: 12px;
+  }
+  .auth-demo-hint {
+    font-size: 0.78rem;
+  }
+  .auth-demo-hint p {
+    font-size: 0.78rem;
+    line-height: 1.5;
+  }
+  .auth-footer {
+    font-size: 0.82rem;
+  }
+
+  /* Registration Modal on mobile */
+  .reg-modal-content {
+    max-width: 100%;
+  }
+  .reg-grid-form {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .reg-student-badge {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+    padding: 12px;
+  }
+  .reg-search-box {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* ---- DASHBOARD (Mobile) ---- */
+@media (max-width: 480px) {
+  .dashboard-container {
+    padding: 16px 10px;
+    gap: 16px;
+  }
+
+  /* Hero Banner */
+  .course-hero-card {
+    padding: 18px 14px;
+    border-radius: 14px;
+  }
+  .hero-glow-pattern {
+    display: none;
+  }
+  .hero-content {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .hero-main-info {
+    min-width: 0;
+  }
+  .hero-badge-group {
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+  .hero-badge-group .badge {
+    font-size: 0.68rem;
+    padding: 3px 7px;
+  }
+  .hero-title {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+  }
+  .hero-desc {
+    font-size: 0.82rem;
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .hero-instructor-card {
+    padding: 8px 12px;
+    gap: 10px;
+  }
+  .instructor-avatar {
+    width: 36px;
+    height: 36px;
+  }
+  .instructor-info h5 {
+    font-size: 0.82rem;
+  }
+  .instructor-info p {
+    font-size: 0.7rem;
+  }
+
+  /* Quick Actions */
+  .hero-quick-actions {
+    min-width: 0;
+    width: 100%;
+    padding: 14px;
+    gap: 8px;
+  }
+  .quick-action-title {
+    font-size: 0.75rem;
+  }
+  .hero-quick-actions .btn {
+    font-size: 0.78rem;
+    padding: 8px 12px;
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .stat-card {
+    padding: 14px 12px;
+    gap: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .stat-icon-wrap {
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+  }
+  .stat-value {
+    font-size: 1.3rem;
+  }
+  .stat-label {
+    font-size: 0.72rem;
+  }
+
+  /* Dashboard Two-Column → Stacked */
+  .dashboard-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .dashboard-main-col,
+  .dashboard-side-col {
+    gap: 14px;
+  }
+
+  /* Sections */
+  .section-header {
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .section-title {
+    font-size: 1rem;
+    gap: 6px;
+  }
+
+  /* Announcements */
+  .announcement-item {
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .announcement-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .announcement-title {
+    font-size: 0.88rem;
+  }
+  .announcement-date {
+    font-size: 0.72rem;
+  }
+  .announcement-body {
+    font-size: 0.8rem;
+  }
+}
+
+/* ---- STUDENTS VIEW (Mobile) ---- */
+@media (max-width: 480px) {
+  .students-container {
+    padding: 14px 10px;
+    gap: 14px;
+  }
+  .students-header-panel {
+    padding: 14px 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .students-title-group h2 {
+    font-size: 1.15rem;
+  }
+  .students-title-group p {
+    font-size: 0.78rem;
+  }
+  .students-controls {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+  .search-input-wrap {
+    min-width: 0;
+    width: 100%;
+  }
+  .search-input-wrap input {
+    width: 100%;
+  }
+
+  /* Class Tabs */
+  .class-tabs-scroll {
+    gap: 6px;
+  }
+  .class-pill-btn {
+    padding: 7px 12px;
+    font-size: 0.78rem;
+    gap: 5px;
+  }
+
+  /* Group Filter */
+  .group-filter-bar {
+    gap: 6px;
+  }
+  .group-chip {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+  }
+
+  /* Student Cards Grid */
+  .students-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .student-card {
+    padding: 12px 10px;
+    border-radius: 10px;
+  }
+  .student-photo-wrapper {
+    width: 64px;
+    height: 85px;
+    margin-bottom: 8px;
+  }
+  .student-card-name {
+    font-size: 0.82rem;
+    line-height: 1.2;
+  }
+  .student-card-id {
+    font-size: 0.72rem;
+    margin-bottom: 5px;
+  }
+  .student-meta-chips {
+    gap: 3px;
+    margin-bottom: 8px;
+  }
+  .meta-chip {
+    font-size: 0.65rem;
+    padding: 1px 5px;
+  }
+  .student-card-footer {
+    font-size: 0.68rem;
+    padding-top: 6px;
+  }
+
+  /* Class Section Title */
+  .class-section-title {
+    font-size: 1rem;
+  }
+}
+
+/* ---- SUPPORT VIEW (Mobile) ---- */
+@media (max-width: 480px) {
+  .support-container {
+    padding: 14px 10px;
+    gap: 18px;
+  }
+  .support-hero-banner {
+    padding: 18px 14px;
+    border-radius: 14px;
+  }
+  .support-hero-text h1 {
+    font-size: 1.2rem;
+    margin-bottom: 6px;
+  }
+  .support-hero-text p {
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  /* Video Frame */
+  .video-frame-card {
+    border-radius: 10px;
+  }
+
+  /* Access Card */
+  .support-access-card {
+    padding: 16px 14px;
+    flex-direction: column;
+    gap: 14px;
+    border-radius: 14px;
+  }
+  .access-status-box {
+    min-width: 0;
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+  .access-icon-circle {
+    width: 50px;
+    height: 50px;
+    font-size: 1.4rem;
+  }
+  .access-details h3 {
+    font-size: 1.1rem;
+  }
+  .access-details p {
+    font-size: 0.82rem;
+  }
+  .access-action-wrap {
+    align-items: stretch;
+    width: 100%;
+  }
+  .access-action-wrap .btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* Feature Cards */
+  .support-features-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .feature-card {
+    padding: 16px 14px;
+    gap: 8px;
+  }
+  .feature-icon-box {
+    width: 40px;
+    height: 40px;
+    font-size: 1.15rem;
+  }
+  .feature-card h4 {
+    font-size: 0.95rem;
+  }
+  .feature-card p {
+    font-size: 0.8rem;
+  }
+}
+
+/* ---- ADMIN VIEW (Mobile) ---- */
+@media (max-width: 480px) {
+  .admin-container {
+    padding: 14px 10px;
+    gap: 14px;
+  }
+  .admin-header {
+    padding: 14px 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .admin-header h2 {
+    font-size: 1.15rem !important;
+  }
+  .admin-header p {
+    font-size: 0.78rem;
+  }
+  .admin-stats-bar {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .admin-stat-box {
+    padding: 12px;
+  }
+  .admin-stat-num {
+    font-size: 1.4rem;
+  }
+  .admin-stat-title {
+    font-size: 0.7rem;
+  }
+  .admin-queue-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .queue-card {
+    padding: 14px;
+  }
+}
+
+/* ---- MODALS (Mobile) ---- */
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 8px;
+    align-items: flex-end;
+  }
+  .modal-card {
+    max-width: 100%;
+    max-height: 92vh;
+    padding: 18px 14px;
+    border-radius: 16px 16px 4px 4px;
+  }
+  .modal-header {
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+  }
+  .modal-title {
+    font-size: 1.1rem;
+    gap: 8px;
+  }
+  .modal-close-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 1.25rem;
+  }
+
+  /* Student Detail Modal */
+  .student-detail-body {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .detail-photo-col {
+    min-width: 0;
+  }
+  .detail-photo-frame {
+    width: 100px;
+    height: 133px;
+  }
+  .detail-info-col {
+    min-width: 0;
+    width: 100%;
+  }
+  .detail-label {
+    width: 100px;
+    font-size: 0.78rem;
+  }
+  .detail-value {
+    font-size: 0.85rem;
+  }
+
+  /* Photo Upload */
+  .photo-upload-dropzone {
+    padding: 18px 12px;
+  }
+  .dropzone-icon {
+    font-size: 2rem;
+  }
+
+  /* Toast */
+  .toast-container {
+    bottom: 12px;
+    right: 12px;
+    left: 12px;
+  }
+  .toast {
+    min-width: 0;
+    max-width: 100%;
+    font-size: 0.82rem;
+    padding: 10px 14px;
+  }
+}
+
+/* ---- GENERAL BUTTONS ON MOBILE ---- */
+@media (max-width: 480px) {
+  .btn {
+    font-size: 0.8rem;
+    padding: 8px 14px;
+  }
+  .btn-sm {
+    font-size: 0.72rem;
+    padding: 5px 10px;
+  }
+  .btn-lg {
+    font-size: 0.88rem;
+    padding: 12px 18px;
+  }
+  .badge {
+    font-size: 0.68rem;
+    padding: 2px 7px;
+  }
+}
+
+/* ---- PRINT FOOTER (Mobile) ---- */
+@media (max-width: 480px) {
+  .print-footer-section {
+    padding: 20px 12px;
+  }
+  .print-footer-section h2 {
+    font-size: 0.85rem !important;
+  }
+  .print-footer-section h3 {
+    font-size: 0.78rem !important;
+  }
+}
