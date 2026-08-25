@@ -243,6 +243,7 @@ class ApiService {
         const response = await fetch(this.apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          redirect: 'follow',
           body: JSON.stringify({
             action: 'login',
             username: cleanUser,
@@ -250,19 +251,43 @@ class ApiService {
           })
         });
 
-        if (response.ok) {
-          const resJson = await response.json();
-          if (resJson.success && resJson.user) {
-            localStorage.setItem(STORAGE_KEY_CURRENT_USER, JSON.stringify(resJson.user));
-            return resJson;
+        const responseText = await response.text();
+        let resJson;
+        try {
+          resJson = JSON.parse(responseText);
+        } catch (e) {
+          console.warn('API login response parse error:', responseText.substring(0, 100));
+        }
+
+        if (resJson && resJson.success && resJson.user) {
+          const userSession = {
+            ...resJson.user,
+            matkhau: cleanPass,
+            isLoggedIn: true
+          };
+          localStorage.setItem(STORAGE_KEY_CURRENT_USER, JSON.stringify(userSession));
+
+          // Đồng bộ mật khẩu và thông tin vào local student cache
+          const list = this.getLocalStudents();
+          const idx = list.findIndex(s => String(s.masv).trim() === cleanUser);
+          if (idx !== -1) {
+            list[idx] = { ...list[idx], ...userSession, matkhau: cleanPass };
+            this.saveLocalStudents(list);
           }
+
+          return { success: true, isAdmin: !!resJson.isAdmin, user: userSession };
+        } else if (resJson && !resJson.success) {
+          throw new Error(resJson.message || 'Mật khẩu không chính xác! Vui lòng kiểm tra lại.');
         }
       } catch (err) {
+        if (err.message && !err.message.includes('fetch') && !err.message.includes('NetworkError') && !err.message.includes('Failed to fetch')) {
+          throw err;
+        }
         console.warn('API login failed, falling back to local:', err);
       }
     }
 
-    // 3. Tra cứu trong Local Cache
+    // 3. Tra cứu trong Local Cache (Chế độ offline)
     const list = this.getLocalStudents();
     const student = list.find(s => String(s.masv).trim() === cleanUser);
 
@@ -296,6 +321,7 @@ class ApiService {
       photoApproved: !!student.photoApproved,
       sothich: student.sothich,
       className: student.className,
+      matkhau: cleanPass,
       isLoggedIn: true
     };
 
@@ -316,7 +342,7 @@ class ApiService {
           user.photoApproved = !!latest.photoApproved;
           user.photoStatus = latest.photoStatus || (latest.anh3x4 ? (latest.photoApproved ? 'ĐÃ DUYỆT' : 'CHỜ DUYỆT') : 'CHƯA CÓ');
           user.anh3x4 = latest.anh3x4;
-          user.matkhau = latest.matkhau;
+          if (latest.matkhau) user.matkhau = latest.matkhau;
           localStorage.setItem(STORAGE_KEY_CURRENT_USER, JSON.stringify(user));
         }
       }
@@ -336,45 +362,88 @@ class ApiService {
       throw new Error('Vui lòng điền đầy đủ mật khẩu cũ và mật khẩu mới');
     }
 
-    if (newPassword.length < 6) {
+    const cleanMasv = String(masv).trim();
+    const cleanOld = String(oldPassword).trim();
+    const cleanNew = String(newPassword).trim();
+
+    if (cleanNew.length < 6) {
       throw new Error('Mật khẩu mới phải có độ dài tối thiểu 6 ký tự');
     }
 
+    // 1. Nếu có kết nối API, gửi lên Google Apps Script để xác thực và đổi trực tiếp trên Google Sheet
+    if (this.apiUrl) {
+      try {
+        const response = await fetch(this.apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          redirect: 'follow',
+          body: JSON.stringify({
+            action: 'changePassword',
+            masv: cleanMasv,
+            oldPassword: cleanOld,
+            newPassword: cleanNew
+          })
+        });
+
+        const responseText = await response.text();
+        let resJson;
+        try {
+          resJson = JSON.parse(responseText);
+        } catch (e) {
+          throw new Error('Máy chủ phản hồi không đúng định dạng');
+        }
+
+        if (resJson && resJson.success) {
+          // Cập nhật Local Storage sau khi đổi thành công trên máy chủ
+          const list = this.getLocalStudents();
+          const idx = list.findIndex(s => String(s.masv).trim() === cleanMasv);
+          if (idx !== -1) {
+            list[idx].matkhau = cleanNew;
+            this.saveLocalStudents(list);
+          }
+
+          const currentUser = this.getCurrentUser();
+          if (currentUser && String(currentUser.masv).trim() === cleanMasv) {
+            currentUser.matkhau = cleanNew;
+            localStorage.setItem(STORAGE_KEY_CURRENT_USER, JSON.stringify(currentUser));
+          }
+
+          return {
+            success: true,
+            message: resJson.message || 'Đổi mật khẩu thành công! Hãy ghi nhớ mật khẩu mới của bạn.'
+          };
+        } else {
+          // Máy chủ trả về lỗi (ví dụ: Mật khẩu cũ không chính xác)
+          throw new Error(resJson.message || 'Mật khẩu cũ không chính xác!');
+        }
+      } catch (err) {
+        // Nếu là lỗi logic từ server (sai mật khẩu), ném lỗi ra ngay
+        if (err.message && !err.message.includes('fetch') && !err.message.includes('NetworkError') && !err.message.includes('Failed to fetch')) {
+          throw err;
+        }
+        console.warn('Sync changePassword to API failed, falling back to local:', err);
+      }
+    }
+
+    // 2. Chế độ ngoại tuyến (Local Fallback khi không có mạng)
     const list = this.getLocalStudents();
-    const idx = list.findIndex(s => String(s.masv).trim() === String(masv).trim());
+    const idx = list.findIndex(s => String(s.masv).trim() === cleanMasv);
 
     if (idx === -1) {
       throw new Error('Không tìm thấy tài khoản sinh viên');
     }
 
-    if (list[idx].matkhau && list[idx].matkhau !== oldPassword) {
+    if (list[idx].matkhau && String(list[idx].matkhau).trim() !== cleanOld) {
       throw new Error('Mật khẩu cũ không chính xác!');
     }
 
-    list[idx].matkhau = newPassword;
+    list[idx].matkhau = cleanNew;
     this.saveLocalStudents(list);
 
     const currentUser = this.getCurrentUser();
-    if (currentUser && currentUser.masv === masv) {
-      currentUser.matkhau = newPassword;
+    if (currentUser && String(currentUser.masv).trim() === cleanMasv) {
+      currentUser.matkhau = cleanNew;
       localStorage.setItem(STORAGE_KEY_CURRENT_USER, JSON.stringify(currentUser));
-    }
-
-    if (this.apiUrl) {
-      try {
-        await fetch(this.apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'changePassword',
-            masv,
-            oldPassword,
-            newPassword
-          })
-        });
-      } catch (err) {
-        console.warn('Sync changePassword failed:', err);
-      }
     }
 
     return { success: true, message: 'Đổi mật khẩu thành công! Hãy ghi nhớ mật khẩu mới của bạn.' };
