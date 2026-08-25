@@ -65,19 +65,22 @@
   color: #1d4ed8;
 }
 .brand-title {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: 1.15rem;
   font-weight: 800;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.2px;
   color: var(--text-title);
-  line-height: 1.2;
+  line-height: 1.3;
 }
 [data-theme="dark"] .brand-title {
-  background: linear-gradient(135deg, #ffffff 40%, #93c5fd 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #ffffff;
+  background: none;
+  -webkit-text-fill-color: #ffffff;
 }
 [data-theme="light"] .brand-title {
   color: #1e3a8a;
+  background: none;
+  -webkit-text-fill-color: #1e3a8a;
 }
 
 .brand-subtitle {

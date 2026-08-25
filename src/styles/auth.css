@@ -148,19 +148,25 @@
 }
 
 .auth-title {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: 1.65rem;
   font-weight: 800;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.2px;
   color: var(--text-title);
   margin-bottom: 6px;
+  line-height: 1.35;
+  padding-top: 4px;
 }
 [data-theme="dark"] .auth-title {
-  background: linear-gradient(135deg, #ffffff 30%, #93c5fd 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #ffffff;
+  background: none;
+  -webkit-text-fill-color: #ffffff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
 }
 [data-theme="light"] .auth-title {
   color: #1e3a8a;
+  background: none;
+  -webkit-text-fill-color: #1e3a8a;
 }
 
 .auth-subtitle {
