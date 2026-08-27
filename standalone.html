@@ -6897,7 +6897,7 @@ class ApiService {
 
       return {
         success: true,
-        message: resJson.message || 'Đổi mật khẩu thành công! Mật khẩu mới đã được cập nhật vào Google Sheet.'
+        message: resJson.message || 'Đã đổi mật khẩu thành công!'
       };
     } else {
       throw new Error((resJson && resJson.message) || 'Đổi mật khẩu thất bại trên Google Sheet!');

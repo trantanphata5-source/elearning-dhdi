@@ -443,7 +443,7 @@ function apiChangePassword(ss, masv, oldPassword, newPassword) {
 
       sheet.getRange(row, COLS.MATKHAU).setValue(newPassword);
       SpreadsheetApp.flush();
-      return { success: true, message: 'Đổi mật khẩu thành công! Mật khẩu mới đã được cập nhật vào Google Sheet.' };
+      return { success: true, message: 'Đã đổi mật khẩu thành công!' };
     }
   }
 
