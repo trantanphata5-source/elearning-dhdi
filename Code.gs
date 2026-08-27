@@ -190,61 +190,57 @@ function apiGetStudents(ss) {
 }
 
 /**
- * 2. Xác thực Mã SV trước khi cho điền thông tin
+ * 2. Xác thực Mã SV trước khi cho điền thông tin (Tối ưu siêu nhanh bằng TextFinder)
  */
 function apiVerifyStudent(ss, masv) {
   if (!masv) return { success: false, message: 'Vui lòng cung cấp Mã số sinh viên' };
 
   masv = String(masv).trim();
-  const sheets = ss.getSheets();
+  var matches = ss.createTextFinder(masv).matchEntireCell(true).findAll();
 
-  for (let sheet of sheets) {
-    const lastRow = sheet.getLastRow();
-    if (lastRow < 3) continue;
+  for (var m = 0; m < matches.length; m++) {
+    var cell = matches[m];
+    var col = cell.getColumn();
+    var row = cell.getRow();
+    var sheet = cell.getSheet();
 
-    const data = sheet.getRange(3, 1, lastRow - 2, 16).getValues();
+    if (col === COLS.MASV && row >= 3) {
+      var rowData = sheet.getRange(row, 1, 1, 16).getValues()[0];
+      var hodem = String(rowData[COLS.HODEM - 1] || '').trim();
+      var ten = String(rowData[COLS.TEN - 1] || '').trim();
+      var lop = String(rowData[COLS.LOP - 1] || '').trim();
+      var nhom = String(rowData[COLS.NHOM - 1] || '').trim();
+      var gioitinh = String(rowData[COLS.GIOITINH - 1] || '').trim();
+      var email = String(rowData[COLS.EMAIL - 1] || '').trim();
+      var matkhau = String(rowData[COLS.MATKHAU - 1] || '').trim();
+      var ngaysinh = formatSheetDate(rowData[COLS.NGAYSINH - 1]);
+      var sdt = formatPhoneNumber(rowData[COLS.SDT - 1]);
+      var diachi = String(rowData[COLS.DIACHI - 1] || '').trim();
+      var quequan = String(rowData[COLS.QUEQUAN - 1] || '').trim();
+      var sothich = String(rowData[COLS.SOTHICH - 1] || '').trim();
+      var anh3x4 = String(rowData[COLS.ANH3X4 - 1] || '').trim();
 
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
-      const rowMasv = String(row[COLS.MASV - 1] || '').trim();
-
-      if (rowMasv === masv) {
-        const hodem = String(row[COLS.HODEM - 1] || '').trim();
-        const ten = String(row[COLS.TEN - 1] || '').trim();
-        const lop = String(row[COLS.LOP - 1] || '').trim();
-        const nhom = String(row[COLS.NHOM - 1] || '').trim();
-        const gioitinh = String(row[COLS.GIOITINH - 1] || '').trim();
-        const email = String(row[COLS.EMAIL - 1] || '').trim();
-        const matkhau = String(row[COLS.MATKHAU - 1] || '').trim();
-        const ngaysinh = formatSheetDate(row[COLS.NGAYSINH - 1]);
-        const sdt = formatPhoneNumber(row[COLS.SDT - 1]);
-        const diachi = String(row[COLS.DIACHI - 1] || '').trim();
-        const quequan = String(row[COLS.QUEQUAN - 1] || '').trim();
-        const sothich = String(row[COLS.SOTHICH - 1] || '').trim();
-        const anh3x4 = String(row[COLS.ANH3X4 - 1] || '').trim();
-
-        return {
-          success: true,
-          found: true,
-          isRegistered: !!(matkhau && email),
-          student: {
-            masv: masv,
-            hodem: hodem,
-            ten: ten,
-            fullname: (hodem + ' ' + ten).trim(),
-            lop: lop,
-            nhom: nhom,
-            gioitinh: gioitinh,
-            ngaysinh: ngaysinh,
-            sdt: sdt,
-            email: email,
-            diachi: diachi,
-            quequan: quequan,
-            sothich: sothich,
-            anh3x4: anh3x4
-          }
-        };
-      }
+      return {
+        success: true,
+        found: true,
+        isRegistered: !!(matkhau && email),
+        student: {
+          masv: masv,
+          hodem: hodem,
+          ten: ten,
+          fullname: (hodem + ' ' + ten).trim(),
+          lop: lop,
+          nhom: nhom,
+          gioitinh: gioitinh,
+          ngaysinh: ngaysinh,
+          sdt: sdt,
+          email: email,
+          diachi: diachi,
+          quequan: quequan,
+          sothich: sothich,
+          anh3x4: anh3x4
+        }
+      };
     }
   }
 
@@ -267,38 +263,31 @@ function apiRegisterStudent(ss, data) {
   if (!email) return { success: false, message: 'Địa chỉ Email là bắt buộc để nhận mật khẩu' };
 
   const generatedPassword = generateRandomPassword(10);
-  const sheets = ss.getSheets();
-  let found = false;
-  let targetSheet = null;
-  let targetRowIndex = -1;
-  let studentName = '';
-  let studentClass = '';
+  var matches = ss.createTextFinder(masv).matchEntireCell(true).findAll();
+  var targetSheet = null;
+  var targetRowIndex = -1;
+  var studentName = '';
+  var studentClass = '';
 
-  for (let sheet of sheets) {
-    const lastRow = sheet.getLastRow();
-    if (lastRow < 3) continue;
-
-    const values = sheet.getRange(3, 1, lastRow - 2, 16).getValues();
-
-    for (let i = 0; i < values.length; i++) {
-      const rowMasv = String(values[i][COLS.MASV - 1] || '').trim();
-      if (rowMasv === masv) {
-        found = true;
-        targetSheet = sheet;
-        targetRowIndex = i + 3;
-        studentName = (String(values[i][COLS.HODEM - 1] || '') + ' ' + String(values[i][COLS.TEN - 1] || '')).trim();
-        studentClass = String(values[i][COLS.LOP - 1] || '').trim();
-        break;
-      }
+  for (var m = 0; m < matches.length; m++) {
+    var cell = matches[m];
+    var col = cell.getColumn();
+    var row = cell.getRow();
+    if (col === COLS.MASV && row >= 3) {
+      targetSheet = cell.getSheet();
+      targetRowIndex = row;
+      var rowData = targetSheet.getRange(row, 1, 1, 16).getValues()[0];
+      studentName = (String(rowData[COLS.HODEM - 1] || '') + ' ' + String(rowData[COLS.TEN - 1] || '')).trim();
+      studentClass = String(rowData[COLS.LOP - 1] || '').trim();
+      break;
     }
-    if (found) break;
   }
 
-  if (!found) {
+  if (!targetSheet) {
     return { success: false, message: 'Không tìm thấy sinh viên với Mã SV: ' + masv };
   }
 
-  // Lưu thông tin vào hệ thống (cập nhật email, mật khẩu; chỉ ghi ngày sinh/sđt nếu có)
+  // Lưu thông tin vào hệ thống
   if (ngaysinh) targetSheet.getRange(targetRowIndex, COLS.NGAYSINH).setValue(ngaysinh);
   if (sdt) targetSheet.getRange(targetRowIndex, COLS.SDT).setValue("'" + formatPhoneNumber(sdt));
   targetSheet.getRange(targetRowIndex, COLS.EMAIL).setValue(email);
@@ -311,7 +300,6 @@ function apiRegisterStudent(ss, data) {
     targetSheet.getRange(2, COLS.TRANGTHAI_ANH).setValue('Duyệt ảnh');
   }
 
-  // Đảm bảo ghi xuống Sheet ngay lập tức
   SpreadsheetApp.flush();
 
   // Gửi Email tài khoản và mật khẩu
@@ -337,17 +325,15 @@ function apiRegisterStudent(ss, data) {
 }
 
 /**
- * 4. Đăng nhập hệ thống
+ * 4. Đăng nhập hệ thống (Tối ưu siêu nhanh bằng TextFinder)
  */
 function apiLogin(ss, username, password) {
-  if (!username || !password) {
-    return { success: false, message: 'Vui lòng nhập đầy đủ tài khoản và mật khẩu' };
-  }
+  if (!username || !password) return { success: false, message: 'Thiếu tài khoản hoặc mật khẩu' };
 
   username = String(username).trim();
   password = String(password).trim();
 
-  // Kiểm tra Quản trị viên
+  // Admin đăng nhập trực tiếp
   if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
     return {
       success: true,
@@ -355,70 +341,68 @@ function apiLogin(ss, username, password) {
       user: {
         role: 'ADMIN',
         username: ADMIN_USERNAME,
-        fullname: 'Quản trị viên E-Learning',
+        fullname: ADMIN_DISPLAY_NAME,
         email: 'admin@dhdi21avl.edu.vn'
       },
       message: 'Đăng nhập Quản trị viên thành công'
     };
   }
 
-  // Kiểm tra Sinh viên
-  const sheets = ss.getSheets();
-  for (let sheet of sheets) {
-    const lastRow = sheet.getLastRow();
-    if (lastRow < 3) continue;
+  var matches = ss.createTextFinder(username).matchEntireCell(true).findAll();
 
-    const data = sheet.getRange(3, 1, lastRow - 2, 16).getValues();
+  for (var m = 0; m < matches.length; m++) {
+    var cell = matches[m];
+    var col = cell.getColumn();
+    var row = cell.getRow();
+    var sheet = cell.getSheet();
 
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
-      const rowMasv = String(row[COLS.MASV - 1] || '').trim();
-      const rowPass = String(row[COLS.MATKHAU - 1] || '').trim();
+    if (col === COLS.MASV && row >= 3) {
+      var rowData = sheet.getRange(row, 1, 1, 16).getValues()[0];
+      var rowMasv = String(rowData[COLS.MASV - 1] || '').trim();
+      var rowPass = String(rowData[COLS.MATKHAU - 1] || '').trim();
 
-      if (rowMasv === username) {
-        if (!rowPass) {
-          return {
-            success: false,
-            message: 'Tài khoản chưa được kích hoạt. Vui lòng bấm "Điền thông tin" để nhận mật khẩu!'
-          };
-        }
+      if (!rowPass) {
+        return {
+          success: false,
+          message: 'Tài khoản chưa được kích hoạt. Vui lòng bấm "Điền thông tin" để nhận mật khẩu!'
+        };
+      }
 
-        if (rowPass === password) {
-          const hodem = String(row[COLS.HODEM - 1] || '').trim();
-          const ten = String(row[COLS.TEN - 1] || '').trim();
-          const gioitinh = String(row[COLS.GIOITINH - 1] || '').trim();
-          const trangthaiAnh = String(row[COLS.TRANGTHAI_ANH - 1] || '').trim();
-          const photoApproved = trangthaiAnh.toUpperCase() === 'ĐÃ DUYỆT' || trangthaiAnh.toUpperCase() === 'APPROVED';
+      if (rowPass === password) {
+        var hodem = String(rowData[COLS.HODEM - 1] || '').trim();
+        var ten = String(rowData[COLS.TEN - 1] || '').trim();
+        var gioitinh = String(rowData[COLS.GIOITINH - 1] || '').trim();
+        var trangthaiAnh = String(rowData[COLS.TRANGTHAI_ANH - 1] || '').trim();
+        var photoApproved = trangthaiAnh.toUpperCase() === 'ĐÃ DUYỆT' || trangthaiAnh.toUpperCase() === 'APPROVED';
 
-          return {
-            success: true,
-            isAdmin: false,
-            user: {
-              role: 'STUDENT',
-              masv: rowMasv,
-              hodem: hodem,
-              ten: ten,
-              fullname: (hodem + ' ' + ten).trim(),
-              lop: String(row[COLS.LOP - 1] || '').trim(),
-              nhom: String(row[COLS.NHOM - 1] || '').trim(),
-              gioitinh: gioitinh,
-              ngaysinh: formatSheetDate(row[COLS.NGAYSINH - 1]),
-              sdt: String(row[COLS.SDT - 1] || '').trim(),
-              email: String(row[COLS.EMAIL - 1] || '').trim(),
-              diachi: String(row[COLS.DIACHI - 1] || '').trim(),
-              quequan: String(row[COLS.QUEQUAN - 1] || '').trim(),
-              anh3x4: String(row[COLS.ANH3X4 - 1] || '').trim(),
-              photoStatus: trangthaiAnh || (row[COLS.ANH3X4 - 1] ? 'CHỜ DUYỆT' : 'CHƯA CÓ'),
-              photoApproved: photoApproved,
-              sothich: String(row[COLS.SOTHICH - 1] || '').trim(),
-              sheetName: sheet.getName(),
-              rowIndex: i + 3
-            },
-            message: 'Đăng nhập thành công'
-          };
-        } else {
-          return { success: false, message: 'Mật khẩu không chính xác. Vui lòng thử lại!' };
-        }
+        return {
+          success: true,
+          isAdmin: false,
+          user: {
+            role: 'STUDENT',
+            masv: rowMasv,
+            hodem: hodem,
+            ten: ten,
+            fullname: (hodem + ' ' + ten).trim(),
+            lop: String(rowData[COLS.LOP - 1] || '').trim(),
+            nhom: String(rowData[COLS.NHOM - 1] || '').trim(),
+            gioitinh: gioitinh,
+            ngaysinh: formatSheetDate(rowData[COLS.NGAYSINH - 1]),
+            sdt: formatPhoneNumber(rowData[COLS.SDT - 1]),
+            email: String(rowData[COLS.EMAIL - 1] || '').trim(),
+            diachi: String(rowData[COLS.DIACHI - 1] || '').trim(),
+            quequan: String(rowData[COLS.QUEQUAN - 1] || '').trim(),
+            anh3x4: String(rowData[COLS.ANH3X4 - 1] || '').trim(),
+            photoStatus: trangthaiAnh || (rowData[COLS.ANH3X4 - 1] ? 'CHỜ DUYỆT' : 'CHƯA CÓ'),
+            photoApproved: photoApproved,
+            sothich: String(rowData[COLS.SOTHICH - 1] || '').trim(),
+            sheetName: sheet.getName(),
+            rowIndex: row
+          },
+          message: 'Đăng nhập thành công'
+        };
+      } else {
+        return { success: false, message: 'Mật khẩu không chính xác. Vui lòng thử lại!' };
       }
     }
   }
@@ -427,7 +411,7 @@ function apiLogin(ss, username, password) {
 }
 
 /**
- * 5. Đổi mật khẩu
+ * 5. Đổi mật khẩu (Tối ưu siêu nhanh bằng TextFinder)
  */
 function apiChangePassword(ss, masv, oldPassword, newPassword) {
   if (!masv || !oldPassword || !newPassword) {
@@ -442,28 +426,24 @@ function apiChangePassword(ss, masv, oldPassword, newPassword) {
     return { success: false, message: 'Mật khẩu mới phải có ít nhất 6 ký tự' };
   }
 
-  var sheets = ss.getSheets();
-  for (var s = 0; s < sheets.length; s++) {
-    var sheet = sheets[s];
-    var lastRow = sheet.getLastRow();
-    if (lastRow < 3) continue;
+  var matches = ss.createTextFinder(masv).matchEntireCell(true).findAll();
 
-    var numRows = lastRow - 2;
-    var values = sheet.getRange(3, 1, numRows, 16).getValues();
+  for (var m = 0; m < matches.length; m++) {
+    var cell = matches[m];
+    var col = cell.getColumn();
+    var row = cell.getRow();
+    var sheet = cell.getSheet();
 
-    for (var i = 0; i < values.length; i++) {
-      var rowMasv = String(values[i][COLS.MASV - 1] || '').trim();
-      var currentPass = String(values[i][COLS.MATKHAU - 1] || '').trim();
+    if (col === COLS.MASV && row >= 3) {
+      var currentPass = String(sheet.getRange(row, COLS.MATKHAU).getValue() || '').trim();
 
-      if (rowMasv === masv) {
-        if (currentPass !== oldPassword) {
-          return { success: false, message: 'Mật khẩu cũ không chính xác' };
-        }
-
-        sheet.getRange(i + 3, COLS.MATKHAU).setValue(newPassword);
-        SpreadsheetApp.flush();
-        return { success: true, message: 'Đổi mật khẩu thành công! Hãy ghi nhớ mật khẩu mới của bạn.' };
+      if (currentPass !== oldPassword) {
+        return { success: false, message: 'Mật khẩu cũ không chính xác' };
       }
+
+      sheet.getRange(row, COLS.MATKHAU).setValue(newPassword);
+      SpreadsheetApp.flush();
+      return { success: true, message: 'Đổi mật khẩu thành công! Mật khẩu mới đã được cập nhật vào Google Sheet.' };
     }
   }
 
@@ -471,7 +451,7 @@ function apiChangePassword(ss, masv, oldPassword, newPassword) {
 }
 
 /**
- * 6. Upload ảnh 3x4 vào Google Drive + cập nhật Google Sheet
+ * 6. Upload ảnh 3x4 vào Google Drive + cập nhật Google Sheet (Tối ưu bằng TextFinder)
  */
 function apiUploadPhoto(ss, masv, photoBase64, photoUrl) {
   if (!masv) return { success: false, message: 'Thiếu Mã số sinh viên' };

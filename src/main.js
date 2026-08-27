@@ -187,12 +187,13 @@ async function syncRemoteDataInBackground() {
     if (remoteStudents && remoteStudents.length > 0) {
       state.students = remoteStudents;
       if (state.currentUser) {
+        state.currentUser = api.getCurrentUser();
         renderAppHeader();
-        renderActiveTab();
       }
+      renderActiveTab();
     }
   } catch (err) {
-    console.warn('Background sync:', err);
+    console.warn('Initial Google Sheet scan:', err);
   }
 }
 
