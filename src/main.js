@@ -621,15 +621,37 @@ function renderDashboardView() {
   `;
 }
 
+function isStudentInClass(s, targetMeta) {
+  if (!s || !targetMeta) return false;
+
+  // 1. Khớp chính xác theo vị trí Sheet (sheetIndex: 0..4)
+  if (s.sheetIndex !== undefined && targetMeta.sheetIndex !== undefined) {
+    if (s.sheetIndex === targetMeta.sheetIndex) return true;
+  }
+
+  // 2. Khớp theo tên Sheet ("Sheet1", "Sheet1 (2)", ...)
+  if (s.sheet && targetMeta.sheet && s.sheet === targetMeta.sheet) return true;
+  if (s.sheetName && targetMeta.sheet && s.sheetName === targetMeta.sheet) return true;
+
+  // 3. Khớp theo Mã Lớp ở đầu chuỗi className (startsWith để tránh nhầm mã 423701046702 ở đuôi của lớp 5)
+  if (s.className && targetMeta.code) {
+    if (s.className.startsWith(targetMeta.code)) return true;
+  }
+
+  // 4. Khớp theo Lớp ID
+  if (s.lop && targetMeta.id) {
+    if (targetMeta.id === 'DHDI19BVL_GL') {
+      return s.lop === 'DHDI19BVL' || s.lop === 'DHDI20BVL';
+    }
+    if (s.lop === targetMeta.id) return true;
+  }
+
+  return false;
+}
+
 function getClassCount(targetMeta) {
   if (!state.students || state.students.length === 0) return targetMeta.count || 0;
-  const count = state.students.filter(s => {
-    const matchSheet = (s.sheet === targetMeta.sheet) || (s.sheetName === targetMeta.sheet);
-    const matchIndex = (s.sheetIndex !== undefined && s.sheetIndex === targetMeta.sheetIndex);
-    const matchClassCode = s.className && s.className.includes(targetMeta.code);
-    const matchLop = (s.lop === targetMeta.id) || (targetMeta.id === 'DHDI19BVL_GL' && (s.lop === 'DHDI20BVL' || s.lop === 'DHDI19BVL'));
-    return matchSheet || matchIndex || matchClassCode || matchLop;
-  }).length;
+  const count = state.students.filter(s => isStudentInClass(s, targetMeta)).length;
   return count || targetMeta.count || 0;
 }
 
@@ -662,7 +684,7 @@ function renderStudentsView() {
 
       <div class="class-tabs-scroll">
         <button class="class-pill-btn ${state.selectedClassId === 'ALL' ? 'active' : ''}" onclick="selectClassFilter('ALL')">
-          <i class="fa-solid fa-layer-group"></i> Tất cả 5 Lớp <span class="class-pill-count">${state.students.length || 85}</span>
+          <i class="fa-solid fa-layer-group"></i> Tất cả 5 Lớp <span class="class-pill-count">${state.students.length || 70}</span>
         </button>
         ${CLASS_METADATA.map(c => `
           <button class="class-pill-btn ${state.selectedClassId === c.id ? 'active' : ''}" onclick="selectClassFilter('${c.id}')">
@@ -691,14 +713,8 @@ function getFilteredStudents() {
   return state.students.filter(s => {
     if (state.selectedClassId !== 'ALL') {
       const targetMeta = CLASS_METADATA.find(m => m.id === state.selectedClassId || m.code === state.selectedClassId);
-      if (targetMeta) {
-        const matchSheet = (s.sheet === targetMeta.sheet) || (s.sheetName === targetMeta.sheet);
-        const matchIndex = (s.sheetIndex !== undefined && s.sheetIndex === targetMeta.sheetIndex);
-        const matchClassCode = s.className && s.className.includes(targetMeta.code);
-        const matchLop = (s.lop === targetMeta.id) || (targetMeta.id === 'DHDI19BVL_GL' && (s.lop === 'DHDI20BVL' || s.lop === 'DHDI19BVL'));
-        if (!matchSheet && !matchIndex && !matchClassCode && !matchLop) {
-          return false;
-        }
+      if (targetMeta && !isStudentInClass(s, targetMeta)) {
+        return false;
       }
     }
 
@@ -734,31 +750,51 @@ function renderClassSections(students) {
     `;
   }
 
-  const classGroups = {};
-  students.forEach(s => {
-    const key = s.className || s.lop || 'Khác';
-    if (!classGroups[key]) classGroups[key] = [];
-    classGroups[key].push(s);
+  const renderedSections = [];
+  const matchedStudentIds = new Set();
+
+  CLASS_METADATA.forEach(c => {
+    const classList = students.filter(s => isStudentInClass(s, c));
+    if (classList.length > 0) {
+      classList.forEach(s => matchedStudentIds.add(s.masv));
+      renderedSections.push(`
+        <div class="class-section-block">
+          <div class="class-section-title-wrap">
+            <div class="class-section-title">
+              <i class="fa-solid fa-graduation-cap" style="color: #2563eb;"></i>
+              <span>${c.code} - ${c.name}</span>
+              <span class="badge badge-primary">${classList.length} Sinh viên</span>
+            </div>
+          </div>
+
+          <div class="students-grid">
+            ${classList.map(s => renderStudentCard(s)).join('')}
+          </div>
+        </div>
+      `);
+    }
   });
 
-  return Object.keys(classGroups).map(className => {
-    const classList = classGroups[className];
-    return `
+  const unclassified = students.filter(s => !matchedStudentIds.has(s.masv));
+  if (unclassified.length > 0) {
+    renderedSections.push(`
       <div class="class-section-block">
         <div class="class-section-title-wrap">
           <div class="class-section-title">
             <i class="fa-solid fa-graduation-cap" style="color: #2563eb;"></i>
-            <span>${className}</span>
-            <span class="badge badge-primary">${classList.length} Sinh viên</span>
+            <span>Khác</span>
+            <span class="badge badge-primary">${unclassified.length} Sinh viên</span>
           </div>
         </div>
 
         <div class="students-grid">
-          ${classList.map(s => renderStudentCard(s)).join('')}
+          ${unclassified.map(s => renderStudentCard(s)).join('')}
         </div>
       </div>
-    `;
-  }).join('');
+    `);
+  }
+
+  return renderedSections.join('');
 }
 
 function renderStudentCard(s) {

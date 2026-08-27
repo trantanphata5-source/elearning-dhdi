@@ -22,7 +22,7 @@ export const COURSE_INFO = {
     avatar: "/instructor.jpg"
   },
   description: "Học phần trang bị cho sinh viên kiến thức chuyên sâu về sơ đồ nối điện chính, lựa chọn thiết bị điện cao áp trong nhà máy điện và trạm biến áp, tính toán dòng ngắn mạch, hệ thống tự dùng, chống sét và nối đất an toàn trong hệ thống điện công nghiệp và truyền tải.",
-  totalStudents: 85,
+  totalStudents: 70,
   totalClasses: 5,
   sheetUrl: "https://docs.google.com/spreadsheets/d/14tqLynkXE4gAkya9wSJeBTfE8zGLyIt13GmNiO5JpOM/edit?usp=sharing",
   supportProgramUrl: "/mo-phong-chuong-3.html",
