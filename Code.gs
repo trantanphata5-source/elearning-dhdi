@@ -14,21 +14,22 @@ const ADMIN_PASSWORD = "@A12345678"; // Mật khẩu quản trị viên mới
 
 // Cột trong dữ liệu (1-indexed)
 const COLS = {
-  STT: 1,
-  MASV: 2,
-  HODEM: 3,
-  TEN: 4,
-  LOP: 5,
-  NHOM: 6,
-  NGAYSINH: 7,
-  SDT: 8,
-  EMAIL: 9,
-  DIACHI: 10,
-  QUEQUAN: 11,
-  ANH3X4: 12,
-  SOTHICH: 13,
-  MATKHAU: 14,
-  TRANGTHAI_ANH: 15 // Cột duyệt ảnh (ĐÃ DUYỆT / CHỜ DUYỆT / TỪ CHỐI)
+  STT: 1,           // Cột A: STT
+  MASV: 2,          // Cột B: Mã SV
+  HODEM: 3,         // Cột C: Họ đệm
+  TEN: 4,           // Cột D: Tên
+  LOP: 5,           // Cột E: Lớp học
+  NHOM: 6,          // Cột F: Nhóm
+  GIOITINH: 7,      // Cột G: Giới tính (Nam / Nữ)
+  NGAYSINH: 8,      // Cột H: Ngày sinh
+  SDT: 9,           // Cột I: Số điện thoại
+  EMAIL: 10,        // Cột J: Email
+  DIACHI: 11,       // Cột K: Địa chỉ
+  QUEQUAN: 12,      // Cột L: Quê quán
+  ANH3X4: 13,       // Cột M: Ảnh 3x4
+  SOTHICH: 14,      // Cột N: Sở thích
+  MATKHAU: 15,      // Cột O: Mật khẩu
+  TRANGTHAI_ANH: 16 // Cột P: Duyệt ảnh (ĐÃ DUYỆT / CHỜ DUYỆT / TỪ CHỐI)
 };
 
 /**
@@ -135,7 +136,7 @@ function apiGetStudents(ss) {
     if (lastRow < 3) return;
 
     const classTitle = sheet.getRange(1, 3).getValue() || sheetName;
-    const dataRange = sheet.getRange(3, 1, lastRow - 2, 15);
+    const dataRange = sheet.getRange(3, 1, lastRow - 2, 16);
     const rows = dataRange.getValues();
 
     rows.forEach((row, idx) => {
@@ -146,6 +147,7 @@ function apiGetStudents(ss) {
       const ten = String(row[COLS.TEN - 1] || '').trim();
       const lop = String(row[COLS.LOP - 1] || '').trim();
       const nhom = String(row[COLS.NHOM - 1] || '').trim();
+      const gioitinh = String(row[COLS.GIOITINH - 1] || '').trim();
       const ngaysinh = formatSheetDate(row[COLS.NGAYSINH - 1]);
       const sdt = String(row[COLS.SDT - 1] || '').trim();
       const email = String(row[COLS.EMAIL - 1] || '').trim();
@@ -169,6 +171,7 @@ function apiGetStudents(ss) {
         fullname: (hodem + ' ' + ten).trim(),
         lop: lop,
         nhom: nhom,
+        gioitinh: gioitinh,
         ngaysinh: ngaysinh,
         sdt: sdt,
         email: email,
@@ -199,7 +202,7 @@ function apiVerifyStudent(ss, masv) {
     const lastRow = sheet.getLastRow();
     if (lastRow < 3) continue;
 
-    const data = sheet.getRange(3, 1, lastRow - 2, 15).getValues();
+    const data = sheet.getRange(3, 1, lastRow - 2, 16).getValues();
 
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
@@ -210,6 +213,7 @@ function apiVerifyStudent(ss, masv) {
         const ten = String(row[COLS.TEN - 1] || '').trim();
         const lop = String(row[COLS.LOP - 1] || '').trim();
         const nhom = String(row[COLS.NHOM - 1] || '').trim();
+        const gioitinh = String(row[COLS.GIOITINH - 1] || '').trim();
         const email = String(row[COLS.EMAIL - 1] || '').trim();
         const matkhau = String(row[COLS.MATKHAU - 1] || '').trim();
         const ngaysinh = formatSheetDate(row[COLS.NGAYSINH - 1]);
@@ -230,6 +234,7 @@ function apiVerifyStudent(ss, masv) {
             fullname: (hodem + ' ' + ten).trim(),
             lop: lop,
             nhom: nhom,
+            gioitinh: gioitinh,
             ngaysinh: ngaysinh,
             sdt: sdt,
             email: email,
@@ -275,7 +280,7 @@ function apiRegisterStudent(ss, data) {
     const lastRow = sheet.getLastRow();
     if (lastRow < 3) continue;
 
-    const values = sheet.getRange(3, 1, lastRow - 2, 14).getValues();
+    const values = sheet.getRange(3, 1, lastRow - 2, 16).getValues();
 
     for (let i = 0; i < values.length; i++) {
       const rowMasv = String(values[i][COLS.MASV - 1] || '').trim();
@@ -295,7 +300,7 @@ function apiRegisterStudent(ss, data) {
     return { success: false, message: 'Không tìm thấy sinh viên với Mã SV: ' + masv };
   }
 
-  // Lưu thông tin vào hệ thống
+  // Lưu thông tin vào hệ thống (theo đúng cột mới)
   targetSheet.getRange(targetRowIndex, COLS.NGAYSINH).setValue(ngaysinh);
   targetSheet.getRange(targetRowIndex, COLS.SDT).setValue("'" + sdt);
   targetSheet.getRange(targetRowIndex, COLS.EMAIL).setValue(email);
@@ -365,7 +370,7 @@ function apiLogin(ss, username, password) {
     const lastRow = sheet.getLastRow();
     if (lastRow < 3) continue;
 
-    const data = sheet.getRange(3, 1, lastRow - 2, 15).getValues();
+    const data = sheet.getRange(3, 1, lastRow - 2, 16).getValues();
 
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
@@ -383,6 +388,7 @@ function apiLogin(ss, username, password) {
         if (rowPass === password) {
           const hodem = String(row[COLS.HODEM - 1] || '').trim();
           const ten = String(row[COLS.TEN - 1] || '').trim();
+          const gioitinh = String(row[COLS.GIOITINH - 1] || '').trim();
           const trangthaiAnh = String(row[COLS.TRANGTHAI_ANH - 1] || '').trim();
           const photoApproved = trangthaiAnh.toUpperCase() === 'ĐÃ DUYỆT' || trangthaiAnh.toUpperCase() === 'APPROVED';
 
@@ -397,6 +403,7 @@ function apiLogin(ss, username, password) {
               fullname: (hodem + ' ' + ten).trim(),
               lop: String(row[COLS.LOP - 1] || '').trim(),
               nhom: String(row[COLS.NHOM - 1] || '').trim(),
+              gioitinh: gioitinh,
               ngaysinh: formatSheetDate(row[COLS.NGAYSINH - 1]),
               sdt: String(row[COLS.SDT - 1] || '').trim(),
               email: String(row[COLS.EMAIL - 1] || '').trim(),
@@ -444,7 +451,7 @@ function apiChangePassword(ss, masv, oldPassword, newPassword) {
     if (lastRow < 3) continue;
 
     var numRows = lastRow - 2;
-    var values = sheet.getRange(3, 1, numRows, 14).getValues();
+    var values = sheet.getRange(3, 1, numRows, 16).getValues();
 
     for (var i = 0; i < values.length; i++) {
       var rowMasv = String(values[i][COLS.MASV - 1] || '').trim();

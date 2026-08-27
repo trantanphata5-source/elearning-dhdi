@@ -703,7 +703,8 @@ function getFilteredStudents() {
       const matchPhone = String(s.sdt || '').includes(q);
       const matchEmail = String(s.email || '').toLowerCase().includes(q);
       const matchLop = String(s.lop || '').toLowerCase().includes(q);
-      if (!matchName && !matchId && !matchPhone && !matchEmail && !matchLop) return false;
+      const matchGender = String(s.gioitinh || '').toLowerCase() === q;
+      if (!matchName && !matchId && !matchPhone && !matchEmail && !matchLop && !matchGender) return false;
     }
 
     return true;
@@ -782,6 +783,7 @@ function renderStudentCard(s) {
       <div class="student-meta-chips">
         <span class="meta-chip">Lớp: ${s.lop}</span>
         <span class="meta-chip">Tổ ${s.nhom || '1'}</span>
+        ${s.gioitinh ? `<span class="meta-chip" style="${s.gioitinh.toLowerCase() === 'nữ' ? 'color: #ec4899; background: rgba(236, 72, 153, 0.1);' : 'color: #2563eb; background: rgba(37, 99, 235, 0.1);'}">${s.gioitinh.toLowerCase() === 'nữ' ? '<i class="fa-solid fa-venus"></i>' : '<i class="fa-solid fa-mars"></i>'} ${s.gioitinh}</span>` : ''}
       </div>
 
       <div class="student-card-footer">
@@ -1543,6 +1545,11 @@ window.openRegisterModal = function() {
         </div>
 
         <div class="form-group">
+          <label class="form-label">Giới tính</label>
+          <input type="text" id="regGioitinh" class="form-control" readonly>
+        </div>
+
+        <div class="form-group">
           <label class="form-label" for="regNgaysinh">
             Ngày sinh <span class="required">*</span>
           </label>
@@ -1630,6 +1637,7 @@ async function handleVerifyMasv() {
       document.getElementById('regTen').value = res.student.ten || '';
       document.getElementById('regLop').value = res.student.lop || '';
       document.getElementById('regNhom').value = res.student.nhom ? `Tổ / Nhóm ${res.student.nhom}` : '';
+      document.getElementById('regGioitinh').value = res.student.gioitinh || '';
       document.getElementById('regNgaysinh').value = res.student.ngaysinh || '';
       document.getElementById('regSdt').value = res.student.sdt || '';
       document.getElementById('regEmail').value = res.student.email || '';
@@ -1832,6 +1840,10 @@ window.openStudentDetailModal = function(masv) {
           <div class="detail-row">
             <div class="detail-label">Tổ / Nhóm:</div>
             <div class="detail-value">Tổ / Nhóm ${student.nhom || '1'}</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Giới tính:</div>
+            <div class="detail-value">${student.gioitinh ? (student.gioitinh.toLowerCase() === 'nữ' ? '<span style="color: #ec4899; font-weight: 600;"><i class="fa-solid fa-venus"></i> Nữ</span>' : '<span style="color: #2563eb; font-weight: 600;"><i class="fa-solid fa-mars"></i> Nam</span>') : '<em style="color: var(--text-muted);">Chưa cập nhật</em>'}</div>
           </div>
           <div class="detail-row">
             <div class="detail-label">Ngày sinh:</div>
