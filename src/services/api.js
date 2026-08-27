@@ -19,6 +19,16 @@ export const ADMIN_CONFIG = {
   displayName: 'Quản trị viên E-Learning'
 };
 
+export function formatPhoneNumber(val) {
+  if (!val) return '';
+  let s = String(val).trim();
+  if (s.startsWith("'")) s = s.substring(1).trim();
+  if (s.length === 9 && /^\d+$/.test(s)) {
+    s = '0' + s;
+  }
+  return s;
+}
+
 class ApiService {
   constructor() {
     this.apiUrl = localStorage.getItem(STORAGE_KEY_API_URL) || DEFAULT_API_URL;
@@ -137,14 +147,12 @@ class ApiService {
     };
   }
 
-  // 2. Đăng ký thông tin sinh viên + tạo mật khẩu ngẫu nhiên + gửi email
+  // 2. Kích hoạt tài khoản sinh viên + tạo mật khẩu ngẫu nhiên + gửi email
   async registerStudent(data) {
-    const { masv, ngaysinh, sdt, email, diachi, quequan, sothich } = data;
+    const { masv, email, diachi, quequan, sothich, ngaysinh, sdt } = data;
 
     if (!masv) throw new Error('Thiếu Mã số sinh viên');
-    if (!ngaysinh) throw new Error('Ngày sinh là bắt buộc');
-    if (!sdt) throw new Error('Số điện thoại là bắt buộc');
-    if (!email) throw new Error('Email là bắt buộc');
+    if (!email) throw new Error('Địa chỉ Email là bắt buộc để nhận mật khẩu');
 
     const generatedPassword = this.generateRandomPassword(10);
 
@@ -155,12 +163,12 @@ class ApiService {
       throw new Error(`Mã số sinh viên ${masv} không tồn tại trong danh sách`);
     }
 
-    list[idx].ngaysinh = ngaysinh;
-    list[idx].sdt = sdt;
+    if (ngaysinh) list[idx].ngaysinh = ngaysinh;
+    if (sdt) list[idx].sdt = formatPhoneNumber(sdt);
     list[idx].email = email;
-    list[idx].diachi = diachi || '';
-    list[idx].quequan = quequan || '';
-    list[idx].sothich = sothich || '';
+    list[idx].diachi = diachi || list[idx].diachi || '';
+    list[idx].quequan = quequan || list[idx].quequan || '';
+    list[idx].sothich = sothich || list[idx].sothich || '';
     list[idx].matkhau = generatedPassword;
     list[idx].isRegistered = true;
     this.saveLocalStudents(list);
@@ -176,12 +184,12 @@ class ApiService {
           body: JSON.stringify({
             action: 'register',
             masv,
-            ngaysinh,
-            sdt,
             email,
-            diachi,
-            quequan,
-            sothich
+            diachi: diachi || '',
+            quequan: quequan || '',
+            sothich: sothich || '',
+            ngaysinh: ngaysinh || '',
+            sdt: sdt || ''
           })
         });
 
@@ -212,7 +220,7 @@ class ApiService {
       tempPassword: generatedPassword,
       emailSent: emailSent,
       remoteSaved: remoteSaved,
-      message: `Đăng ký thông tin thành công! Mật khẩu khởi tạo đã được gửi về email: ${email}`
+      message: `Kích hoạt tài khoản thành công! Mật khẩu khởi tạo đã được gửi về email: ${email}`
     };
   }
 

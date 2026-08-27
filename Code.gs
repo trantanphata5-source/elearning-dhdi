@@ -149,7 +149,7 @@ function apiGetStudents(ss) {
       const nhom = String(row[COLS.NHOM - 1] || '').trim();
       const gioitinh = String(row[COLS.GIOITINH - 1] || '').trim();
       const ngaysinh = formatSheetDate(row[COLS.NGAYSINH - 1]);
-      const sdt = String(row[COLS.SDT - 1] || '').trim();
+      const sdt = formatPhoneNumber(row[COLS.SDT - 1]);
       const email = String(row[COLS.EMAIL - 1] || '').trim();
       const diachi = String(row[COLS.DIACHI - 1] || '').trim();
       const quequan = String(row[COLS.QUEQUAN - 1] || '').trim();
@@ -217,7 +217,7 @@ function apiVerifyStudent(ss, masv) {
         const email = String(row[COLS.EMAIL - 1] || '').trim();
         const matkhau = String(row[COLS.MATKHAU - 1] || '').trim();
         const ngaysinh = formatSheetDate(row[COLS.NGAYSINH - 1]);
-        const sdt = String(row[COLS.SDT - 1] || '').trim();
+        const sdt = formatPhoneNumber(row[COLS.SDT - 1]);
         const diachi = String(row[COLS.DIACHI - 1] || '').trim();
         const quequan = String(row[COLS.QUEQUAN - 1] || '').trim();
         const sothich = String(row[COLS.SOTHICH - 1] || '').trim();
@@ -252,21 +252,19 @@ function apiVerifyStudent(ss, masv) {
 }
 
 /**
- * 3. Đăng ký thông tin: Lưu dữ liệu + Tạo MK ngẫu nhiên 10 ký tự + Gửi Email
+ * 3. Đăng ký thông tin: Lưu Email + Tạo MK ngẫu nhiên 10 ký tự + Gửi Email
  */
 function apiRegisterStudent(ss, data) {
   const masv = String(data.masv || '').trim();
-  const ngaysinh = String(data.ngaysinh || '').trim();
-  const sdt = String(data.sdt || '').trim();
   const email = String(data.email || '').trim();
   const diachi = String(data.diachi || '').trim();
   const quequan = String(data.quequan || '').trim();
   const sothich = String(data.sothich || '').trim();
+  const ngaysinh = String(data.ngaysinh || '').trim();
+  const sdt = String(data.sdt || '').trim();
 
   if (!masv) return { success: false, message: 'Mã SV không được để trống' };
-  if (!ngaysinh) return { success: false, message: 'Ngày sinh là bắt buộc' };
-  if (!sdt) return { success: false, message: 'Số điện thoại là bắt buộc' };
-  if (!email) return { success: false, message: 'Email là bắt buộc' };
+  if (!email) return { success: false, message: 'Địa chỉ Email là bắt buộc để nhận mật khẩu' };
 
   const generatedPassword = generateRandomPassword(10);
   const sheets = ss.getSheets();
@@ -300,13 +298,13 @@ function apiRegisterStudent(ss, data) {
     return { success: false, message: 'Không tìm thấy sinh viên với Mã SV: ' + masv };
   }
 
-  // Lưu thông tin vào hệ thống (theo đúng cột mới)
-  targetSheet.getRange(targetRowIndex, COLS.NGAYSINH).setValue(ngaysinh);
-  targetSheet.getRange(targetRowIndex, COLS.SDT).setValue("'" + sdt);
+  // Lưu thông tin vào hệ thống (cập nhật email, mật khẩu; chỉ ghi ngày sinh/sđt nếu có)
+  if (ngaysinh) targetSheet.getRange(targetRowIndex, COLS.NGAYSINH).setValue(ngaysinh);
+  if (sdt) targetSheet.getRange(targetRowIndex, COLS.SDT).setValue("'" + formatPhoneNumber(sdt));
   targetSheet.getRange(targetRowIndex, COLS.EMAIL).setValue(email);
-  targetSheet.getRange(targetRowIndex, COLS.DIACHI).setValue(diachi);
-  targetSheet.getRange(targetRowIndex, COLS.QUEQUAN).setValue(quequan);
-  targetSheet.getRange(targetRowIndex, COLS.SOTHICH).setValue(sothich);
+  if (diachi) targetSheet.getRange(targetRowIndex, COLS.DIACHI).setValue(diachi);
+  if (quequan) targetSheet.getRange(targetRowIndex, COLS.QUEQUAN).setValue(quequan);
+  if (sothich) targetSheet.getRange(targetRowIndex, COLS.SOTHICH).setValue(sothich);
   targetSheet.getRange(targetRowIndex, COLS.MATKHAU).setValue(generatedPassword);
 
   if (targetSheet.getRange(2, COLS.TRANGTHAI_ANH).getValue() === '') {
@@ -328,7 +326,7 @@ function apiRegisterStudent(ss, data) {
 
   return {
     success: true,
-    message: 'Đăng ký thông tin thành công! Mật khẩu đăng nhập đã được gửi về email: ' + email,
+    message: 'Kích hoạt tài khoản thành công! Mật khẩu đăng nhập đã được gửi về email: ' + email,
     masv: masv,
     fullname: studentName,
     email: email,
@@ -692,4 +690,66 @@ function sendLoginCredentialsEmail(toEmail, studentName, masv, password, classNa
     subject: subject,
     htmlBody: htmlBody
   });
+}
+
+function formatPhoneNumber(val) {
+  if (!val) return '';
+  let s = String(val).trim();
+  if (s.startsWith("'")) s = s.substring(1).trim();
+  // Nếu có 9 chữ số (thiếu số 0 ở đầu)
+  if (s.length === 9 && /^\d+$/.test(s)) {
+    s = '0' + s;
+  }
+  return s;
+}
+
+/**
+ * =========================================================================
+ * HÀM TIỆN ÍCH QUẢN TRỊ: Chuẩn hóa tự động thêm số 0 vào đầu tất cả SĐT
+ * =========================================================================
+ * Hướng dẫn: Chọn hàm "fixAllPhoneNumbers" từ dropdown trên thanh công cụ
+ * và bấm "▶ Chạy" (Run) 1 lần để tự động sửa tất cả SĐT trên cả 5 Sheet.
+ */
+function fixAllPhoneNumbers() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheets = ss.getSheets();
+  let totalFixed = 0;
+
+  sheets.forEach(sheet => {
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 3) return;
+
+    const numRows = lastRow - 2;
+    const range = sheet.getRange(3, COLS.SDT, numRows, 1);
+    const values = range.getValues();
+    let modified = false;
+
+    for (let i = 0; i < values.length; i++) {
+      let raw = String(values[i][0] || '').trim();
+      if (!raw) continue;
+
+      if (raw.startsWith("'")) {
+        raw = raw.substring(1).trim();
+      }
+
+      // Nếu có 9 chữ số (thiếu số 0)
+      if (raw.length === 9 && /^\d+$/.test(raw)) {
+        values[i][0] = "'0" + raw;
+        modified = true;
+        totalFixed++;
+      } else if (raw.length === 10 && raw.startsWith('0')) {
+        // Đảm bảo có dấu ' để lưu dạng text
+        values[i][0] = "'" + raw;
+        modified = true;
+      }
+    }
+
+    if (modified) {
+      range.setValues(values);
+    }
+  });
+
+  SpreadsheetApp.flush();
+  Logger.log("✅ Đã chuẩn hóa số điện thoại thành công cho: " + totalFixed + " sinh viên!");
+  return "✅ Đã chuẩn hóa số điện thoại thành công cho: " + totalFixed + " sinh viên!";
 }

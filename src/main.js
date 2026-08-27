@@ -3,7 +3,7 @@
  * Trường Đại học Công nghiệp TP. Hồ Chí Minh
  */
 
-import { api, ADMIN_CONFIG } from './services/api.js';
+import { api, ADMIN_CONFIG, formatPhoneNumber } from './services/api.js';
 import { COURSE_INFO, ANNOUNCEMENTS, CHAPTERS, ASSIGNMENTS, SCHEDULE } from './data/courseData.js';
 import { CLASS_METADATA } from './data/studentsData.js';
 import { LECTURE_MATERIALS } from './data/lectureMaterials.js';
@@ -1550,26 +1550,22 @@ window.openRegisterModal = function() {
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="regNgaysinh">
-            Ngày sinh <span class="required">*</span>
-          </label>
-          <input type="text" id="regNgaysinh" class="form-control" placeholder="DD/MM/YYYY (VD: 15/08/1998)" required>
+          <label class="form-label">Ngày sinh</label>
+          <input type="text" id="regNgaysinh" class="form-control" readonly>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="regSdt">
-            Số điện thoại <span class="required">*</span>
-          </label>
-          <input type="tel" id="regSdt" class="form-control" placeholder="VD: 0912345678" required>
+          <label class="form-label">Số điện thoại</label>
+          <input type="tel" id="regSdt" class="form-control" readonly>
         </div>
 
         <div class="form-group grid-col-full">
           <label class="form-label" for="regEmail">
-            Địa chỉ Email (Nhận mật khẩu) <span class="required">*</span>
+            Địa chỉ Email (Nhận mật khẩu đăng nhập) <span class="required">*</span>
           </label>
-          <input type="email" id="regEmail" class="form-control" placeholder="Email nhận thông tin tài khoản (VD: sinhvien@gmail.com)" required>
-          <small style="color: var(--primary); font-size: 0.8rem; margin-top: 4px;">
-            ⚠️ Mật khẩu ngẫu nhiên 10 ký tự sẽ được tạo và gửi về email này!
+          <input type="email" id="regEmail" class="form-control" placeholder="Nhập Email để nhận mật khẩu khởi tạo (VD: sinhvien@gmail.com)" required>
+          <small style="color: var(--primary); font-size: 0.82rem; margin-top: 4px; display: block;">
+            <i class="fa-solid fa-circle-info"></i> Mật khẩu ngẫu nhiên 10 ký tự sẽ được tạo tự động và gửi về Email này!
           </small>
         </div>
 
@@ -1592,7 +1588,7 @@ window.openRegisterModal = function() {
       <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
         <button type="button" class="btn btn-secondary" onclick="closeModal('registerModal')">Hủy bỏ</button>
         <button type="submit" id="btnSaveRegistration" class="btn btn-accent btn-lg">
-          <i class="fa-solid fa-paper-plane"></i> Lưu thông tin & Nhận mật khẩu
+          <i class="fa-solid fa-paper-plane"></i> Kích hoạt tài khoản & Nhận mật khẩu
         </button>
       </div>
     </form>
@@ -1649,12 +1645,12 @@ async function handleVerifyMasv() {
         <div class="badge-icon"><i class="fa-solid fa-circle-check" style="color: #34d399;"></i></div>
         <div class="badge-details">
           <h4>${res.student.fullname} (Mã SV: ${res.student.masv})</h4>
-          <p>Lớp: <strong>${res.student.lop}</strong> • Nhóm: <strong>${res.student.nhom || '1'}</strong></p>
+          <p>Lớp: <strong>${res.student.lop}</strong> • Nhóm: <strong>${res.student.nhom || '1'}</strong> • SĐT: <strong>${res.student.sdt || 'Chưa có'}</strong></p>
         </div>
       `;
 
       document.getElementById('regStep2Form').style.display = 'block';
-      document.getElementById('regNgaysinh').focus();
+      document.getElementById('regEmail').focus();
     } else {
       if (msgArea) {
         msgArea.innerHTML = `
@@ -1679,27 +1675,30 @@ async function handleSaveRegistration(e) {
   if (!state.verifiedStudentData) return;
 
   const btn = document.getElementById('btnSaveRegistration');
-  const ngaysinh = document.getElementById('regNgaysinh')?.value.trim();
-  const sdt = document.getElementById('regSdt')?.value.trim();
   const email = document.getElementById('regEmail')?.value.trim();
   const diachi = document.getElementById('regDiachi')?.value.trim();
   const quequan = document.getElementById('regQuequan')?.value.trim();
   const sothich = document.getElementById('regSothich')?.value.trim();
 
-  if (!ngaysinh || !sdt || !email) {
-    showToast('Ngày sinh, Số điện thoại và Email là các trường bắt buộc!', 'error');
+  if (!email) {
+    showToast('Vui lòng nhập địa chỉ Email để nhận mật khẩu đăng nhập!', 'error');
     return;
   }
 
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner spin"></i> Đang lưu thông tin...`;
+    btn.innerHTML = `<i class="fa-solid fa-spinner spin"></i> Đang kích hoạt tài khoản...`;
   }
 
   try {
     const payload = {
       masv: state.verifiedStudentData.masv,
-      ngaysinh, sdt, email, diachi, quequan, sothich
+      email,
+      diachi,
+      quequan,
+      sothich,
+      ngaysinh: state.verifiedStudentData.ngaysinh,
+      sdt: state.verifiedStudentData.sdt
     };
     const res = await api.registerStudent(payload);
     if (res.success) {
@@ -1712,7 +1711,7 @@ async function handleSaveRegistration(e) {
   } finally {
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Lưu thông tin & Nhận mật khẩu`;
+      btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Kích hoạt tài khoản & Nhận mật khẩu`;
     }
   }
 }
@@ -1851,7 +1850,7 @@ window.openStudentDetailModal = function(masv) {
           </div>
           <div class="detail-row">
             <div class="detail-label">Số điện thoại:</div>
-            <div class="detail-value">${student.sdt || '<em style="color: var(--text-muted);">Chưa cập nhật</em>'}</div>
+            <div class="detail-value">${student.sdt ? formatPhoneNumber(student.sdt) : '<em style="color: var(--text-muted);">Chưa cập nhật</em>'}</div>
           </div>
           <div class="detail-row">
             <div class="detail-label">Địa chỉ Email:</div>
