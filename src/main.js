@@ -611,7 +611,7 @@ function renderDashboardView() {
                   <strong style="color: var(--text-title); font-size: 0.92rem;">${c.id}</strong>
                   <div style="font-size: 0.78rem; color: var(--text-muted);">${c.name}</div>
                 </div>
-                <span class="badge badge-primary">${c.count} SV</span>
+                <span class="badge badge-primary">${getClassCount(c)} SV</span>
               </div>
             `).join('')}
           </div>
@@ -619,6 +619,18 @@ function renderDashboardView() {
       </div>
     </div>
   `;
+}
+
+function getClassCount(targetMeta) {
+  if (!state.students || state.students.length === 0) return targetMeta.count || 0;
+  const count = state.students.filter(s => {
+    const matchSheet = (s.sheet === targetMeta.sheet) || (s.sheetName === targetMeta.sheet);
+    const matchIndex = (s.sheetIndex !== undefined && s.sheetIndex === targetMeta.sheetIndex);
+    const matchClassCode = s.className && s.className.includes(targetMeta.code);
+    const matchLop = (s.lop === targetMeta.id) || (targetMeta.id === 'DHDI19BVL_GL' && (s.lop === 'DHDI20BVL' || s.lop === 'DHDI19BVL'));
+    return matchSheet || matchIndex || matchClassCode || matchLop;
+  }).length;
+  return count || targetMeta.count || 0;
 }
 
 // ==========================================
@@ -650,11 +662,11 @@ function renderStudentsView() {
 
       <div class="class-tabs-scroll">
         <button class="class-pill-btn ${state.selectedClassId === 'ALL' ? 'active' : ''}" onclick="selectClassFilter('ALL')">
-          <i class="fa-solid fa-layer-group"></i> Tất cả 5 Lớp <span class="class-pill-count">${state.students.length}</span>
+          <i class="fa-solid fa-layer-group"></i> Tất cả 5 Lớp <span class="class-pill-count">${state.students.length || 85}</span>
         </button>
         ${CLASS_METADATA.map(c => `
           <button class="class-pill-btn ${state.selectedClassId === c.id ? 'active' : ''}" onclick="selectClassFilter('${c.id}')">
-            ${c.id} <span class="class-pill-count">${c.count}</span>
+            ${c.id} <span class="class-pill-count">${getClassCount(c)}</span>
           </button>
         `).join('')}
       </div>

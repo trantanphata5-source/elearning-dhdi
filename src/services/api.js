@@ -35,10 +35,25 @@ class ApiService {
     this.initDatabase();
   }
 
-  // Khởi tạo Database nếu chưa có
+  // Khởi tạo Database nếu chưa có hoặc tự động đồng bộ khi có danh sách mới (85 sinh viên)
   initDatabase() {
-    const existing = localStorage.getItem(STORAGE_KEY_STUDENTS);
-    if (!existing) {
+    try {
+      const existing = localStorage.getItem(STORAGE_KEY_STUDENTS);
+      if (!existing) {
+        localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(INITIAL_STUDENTS));
+      } else {
+        const parsed = JSON.parse(existing);
+        // Nếu bộ nhớ tạm cũ có ít hơn số lượng sinh viên hiện tại (ví dụ bản cũ 70 < 85), tự động làm mới
+        if (!Array.isArray(parsed) || parsed.length < INITIAL_STUDENTS.length) {
+          const merged = INITIAL_STUDENTS.map(initS => {
+            const old = Array.isArray(parsed) ? parsed.find(o => String(o.masv).trim() === String(initS.masv).trim()) : null;
+            return old ? { ...initS, ...old, sheet: initS.sheet, sheetIndex: initS.sheetIndex, className: initS.className } : initS;
+          });
+          localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(merged));
+        }
+      }
+    } catch (e) {
+      console.error('initDatabase error:', e);
       localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(INITIAL_STUDENTS));
     }
   }
@@ -55,7 +70,12 @@ class ApiService {
   getLocalStudents() {
     try {
       const data = localStorage.getItem(STORAGE_KEY_STUDENTS);
-      return data ? JSON.parse(data) : [...INITIAL_STUDENTS];
+      if (!data) return [...INITIAL_STUDENTS];
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed) && parsed.length >= INITIAL_STUDENTS.length) {
+        return parsed;
+      }
+      return [...INITIAL_STUDENTS];
     } catch (e) {
       console.error('Error reading local students:', e);
       return [...INITIAL_STUDENTS];
